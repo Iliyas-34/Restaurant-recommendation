@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Tutorials | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="page-wrap gradient-bg">
+  <div class="container">
+    <h1 class="heading">Tutorials</h1>
+    <div class="accordion" id="tuts">
+      <div class="item">
+        <button class="acc-btn">Getting Started</button>
+        <div class="acc-panel"><p>Sign up, log in, and explore restaurants using filters and search. Save favorites to your wishlist.</p></div>
+      </div>
+      <div class="item">
+        <button class="acc-btn">How to Add Restaurants</button>
+        <div class="acc-panel"><p>Use admin tools to import datasets or add entries with basic details like name, city, and cuisines.</p></div>
+      </div>
+      <div class="item">
+        <button class="acc-btn">Managing Wishlist</button>
+        <div class="acc-panel"><p>Click the heart button to add or remove restaurants. View them under the Wishlist page.</p></div>
+      </div>
+      <div class="item">
+        <button class="acc-btn">Admin Tools Overview</button>
+        <div class="acc-panel"><p>Moderate reviews, manage data, and customize recommendations from the admin panel.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.page-wrap { position: relative; padding: 28px 16px; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.5), rgba(255,79,0,0.05)); z-index: 0; }
+.container { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+.heading { font-weight: 800; font-size: 28px; color: var(--royal); margin-bottom: 12px; }
+.accordion .item { background: #fff; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+.acc-btn { width: 100%; text-align: left; background: #fff; border: none; padding: 14px; font-weight: 700; color: #111827; cursor: pointer; }
+.acc-panel { display: none; padding: 0 14px 14px; color: #374151; }
+.acc-btn.active { background: #FFF3EC; }
+</style>
+
+<script>
+document.querySelectorAll('#tuts .acc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('active');
+    const panel = btn.nextElementSibling;
+    if (panel.style.display === 'block') { panel.style.display = 'none'; } else { panel.style.display = 'block'; }
+  });
+});
+</script>
+
+{% endblock %}
+
+

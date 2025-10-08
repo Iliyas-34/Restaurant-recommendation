@@ -1,0 +1,699 @@
+/* ========== Premium Palette Variables (warm, food-centric) ========== */
+:root {
+  /* Primary warm tones */
+  --space-orange: #D9822B;         /* copper orange (primary) */
+  --space-orange-700: #b56a1e;     /* hover/darken */
+  --flame-orange: #FF4F00;         /* vivid CTA accent */
+  --rose-warm: #A63D2E;            /* muted warm red for accents */
+
+  /* Accent greens */
+  --shamrock: #009E60;             /* success/active */
+  --shamrock-700: #2C5F2D;         /* deeper green */
+
+  /* Neutrals & text */
+  --cream-soft: #F2E8C4;           /* cream background */
+  --cream-alt: #F0ECE2;            /* alt cream */
+  --jonquil: #E5E7EB;              /* light divider bg */
+  --royal: #5E243A;                /* deep brown for headers/nav */
+  --daisy: #FFFFFF;                /* white */
+  --text: #333333;                 /* charcoal text */
+  --muted-text: #6B7280;           /* secondary text */
+  --surface: #FFFFFF;              /* card surface */
+  --surface-alt: #F2E8C4;          /* section background (cream) */
+  --divider: rgba(94,36,58,0.15);  /* soft brown divider */
+}
+
+/* ========== Global Styles ========== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(-45deg, var(--surface-alt), var(--cream-alt), var(--surface-alt));
+  background-size: 400% 400%;
+  animation: gradientBG 18s ease infinite;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Unified form controls */
+input[type="text"], input[type="email"], input[type="password"], textarea, select {
+  background-color: #fdfdfd;
+  border: 1.5px solid #cfd6dd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+  border-color: var(--royal);
+  box-shadow: 0 0 0 4px rgba(31,41,51,0.12);
+}
+label { color: var(--royal); font-weight: 600; }
+
+/* Unified primary button */
+.btn, button.primary, .contact-form button, .filters button {
+  background: var(--space-orange);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.btn:hover, button.primary:hover, .contact-form button:hover, .filters button:hover {
+  background: var(--space-orange-700);
+}
+
+/* ========== Navbar ========== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--royal);
+  padding: 12px 30px;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(31,41,51,0.25);
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color: var(--flame-orange);
+}
+
+/* ========== Filters Section ========== */
+.filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 20px auto;
+  padding: 12px;
+}
+
+/* Search Box */
+.filters input[type="text"] {
+  background-color: #fdfdfd;
+  border: 1.5px solid #cfd6dd;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 14px;
+  width: 220px;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.filters input[type="text"]::placeholder {
+  color: #777;
+  font-style: italic;
+}
+
+.filters input[type="text"]:focus,
+.filters input[type="text"]:hover {
+  border-color: var(--royal);
+  box-shadow: 0 0 0 4px rgba(31,41,51,0.12);
+}
+
+/* Styled Select Boxes */
+.filters select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-color: #fdfdfd;
+  color: var(--text);
+  border: 1.5px solid #cfd6dd;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.filters select:focus,
+.filters select:hover {
+  border-color: var(--royal);
+  box-shadow: 0 0 0 4px rgba(31,41,51,0.12);
+}
+
+.filters select option {
+  background-color: #fff;
+  color: #333;
+  padding: 10px;
+}
+
+/* Apply Button */
+.filters button {
+  background: var(--space-orange);
+  color: white;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 10px rgba(217,130,43,0.25);
+}
+
+.filters button:hover {
+  background: var(--space-orange-700); /* darker copper */
+  box-shadow: 0 6px 14px rgba(217,130,43,0.35);
+  transform: translateY(-1px);
+}
+
+/* ========== Restaurant Grid ========== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0px 8px 24px rgba(0,0,0,0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border: 1px solid var(--divider);
+  position: relative; /* enable absolute-positioned children like wishlist icon */
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0px 14px 32px rgba(0,0,0,0.14);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 16px;
+  background: var(--surface);
+}
+
+.card h3 {
+  margin: 0 0 12px 0;
+  color: var(--royal);
+}
+
+/* ========== Pagination ========== */
+#pagination {
+  text-align: center;
+  margin: 25px 0;
+}
+
+#pagination button {
+  padding: 10px 18px;
+  margin: 0 5px;
+  background: var(--space-orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 10px rgba(217,130,43,0.25);
+}
+
+#pagination button:hover {
+  background: var(--space-orange-700);
+  box-shadow: 0 5px 14px rgba(217,130,43,0.35);
+  transform: translateY(-1px);
+}
+
+#pagination button.active {
+  background: var(--flame-orange);
+  font-weight: 700;
+  transform: scale(1.08);
+}
+
+/* ========== Recommendations Slider (Netflix-style) ========== */
+.recommendations {
+  margin: 40px 20px;
+  padding: 20px;
+  background: var(--surface-alt);
+  border-radius: 14px;
+  border: 1px solid var(--divider);
+}
+
+.recommendations h2 {
+  margin-bottom: 15px;
+  color: var(--royal);
+  text-align: center;
+}
+
+.rec-slider-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.rec-slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 15px;
+  padding: 10px;
+}
+
+.rec-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.rec-card {
+  min-width: 220px;
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  border: 1px solid var(--divider);
+}
+
+.rec-card:hover {
+  transform: scale(1.05);
+}
+
+.rec-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+/* Arrow buttons */
+.scroll-btn {
+  background: var(--space-orange);
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 50%;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  margin: 0 10px;
+  box-shadow: 0 3px 10px rgba(217,130,43,0.25);
+}
+
+.scroll-btn:hover {
+  background: var(--space-orange-700);
+  box-shadow: 0 5px 14px rgba(217,130,43,0.35);
+  transform: translateY(-1px);
+}
+
+/* ========== Modal (Similar Restaurants) ========== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: var(--royal);
+}
+
+.close {
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #888;
+}
+
+.close:hover {
+  color: #000;
+}
+
+/* ========== Home Page Hero ========== */
+.hero {
+  text-align: center;
+  padding: 80px 20px;
+  animation: fadeIn 2s ease-in-out;
+  background: url("../images/home-bg.jpg") no-repeat center center/cover;
+  color: white;
+  border-radius: 12px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  color: var(--daisy);
+}
+
+.hero p {
+  font-size: 20px;
+  color: white;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: var(--space-orange);
+  color: white;
+  font-size: 18px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 18px rgba(217,130,43,0.28);
+}
+
+.btn:hover {
+  background: var(--space-orange-700);
+  box-shadow: 0 10px 22px rgba(217,130,43,0.34);
+  transform: translateY(-1px);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ========== Footer ========== */
+.footer {
+  background: var(--royal);
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  border-top: 3px solid var(--space-orange);
+  box-shadow: 0 -2px 10px rgba(31,41,51,0.2);
+}
+
+.footer p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ========== Wishlist Section ========== */
+.wishlist {
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.wishlist h2 {
+  color: var(--royal);
+  margin-bottom: 10px;
+}
+
+.wishlist p {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+/* About Page */
+.about {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.about h1, .about h2 {
+  color: var(--royal);
+  margin-bottom: 10px;
+}
+.about ul {
+  list-style: none;
+  padding: 0;
+}
+.about ul li {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+/* Contact Page */
+.contact {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.contact-form input, .contact-form textarea {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccd4ff;
+  font-size: 14px;
+}
+.contact-form button {
+  background: var(--space-orange);
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(217,130,43,0.25);
+}
+.contact-form button:hover {
+  background: var(--space-orange-700);
+  box-shadow: 0 6px 16px rgba(217,130,43,0.35);
+  transform: translateY(-1px);
+}
+
+/* Contact & Feedback page background */
+.contact-feedback-page {
+  background: url("/static/images/restaurant-bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contact-feedback-page .form-container {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Contact & Feedback form button styling */
+.contact-feedback-page .form-container button {
+  background: var(--space-orange);
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-shadow: 0 6px 18px rgba(217,130,43,0.28);
+}
+
+.contact-feedback-page .form-container button:hover {
+  background: var(--space-orange-700);
+  box-shadow: 0 10px 22px rgba(217,130,43,0.34);
+  transform: translateY(-2px);
+}
+
+/* Card Hover Effect */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Image zoom on hover */
+.card img {
+  transition: transform 0.4s ease;
+  border-radius: 10px;
+}
+
+.card:hover img {
+  transform: scale(1.08);
+}
+
+/* Button hover */
+.card button {
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.card button:hover {
+  background: var(--flame-orange);
+  transform: scale(1.05);
+}
+
+/* Wishlist heart icon */
+.wishlist-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  color: #FF4F00;
+  cursor: pointer;
+  z-index: 2;
+  user-select: none;
+  transition: transform .15s ease, filter .2s ease, opacity .2s ease;
+}
+.wishlist-icon:hover { transform: scale(1.08); filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+.wishlist-icon.liked { filter: hue-rotate(10deg) saturate(1.2); }
+
+/* =========================
+   🌙 Dark Mode Styles
+   ========================= */
+body.dark-mode {
+  background: #121212;
+  color: #f5f5f5;
+}
+
+/* Navbar, Sidebar, Footer */
+body.dark-mode .navbar,
+body.dark-mode .footer,
+body.dark-mode .sidebar {
+  background: #1e1e1e !important;
+  color: #f5f5f5;
+}
+body.dark-mode .nav-links li a,
+body.dark-mode .sidebar a {
+  color: #f5f5f5;
+}
+body.dark-mode .nav-links li a:hover,
+body.dark-mode .sidebar a:hover {
+  color: var(--jonquil);
+}
+body.dark-mode .footer {
+  border-top: 3px solid #444;
+}
+
+/* Cards, Recommendations, Wishlist, Modals */
+body.dark-mode .card,
+body.dark-mode .rec-card,
+body.dark-mode .modal-content,
+body.dark-mode .wishlist,
+body.dark-mode .recommendations {
+  background: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0px 4px 12px rgba(255,255,255,0.05);
+}
+body.dark-mode .card h3,
+body.dark-mode .rec-card h4,
+body.dark-mode .modal-content h3 {
+  color: #ffb74d;
+}
+body.dark-mode .card p,
+body.dark-mode .rec-card p,
+body.dark-mode .modal-content p {
+  color: #ddd;
+}
+
+/* Buttons */
+body.dark-mode .card button,
+body.dark-mode .scroll-btn {
+  background: var(--space-orange);
+  color: #fff;
+}
+body.dark-mode .card button:hover,
+body.dark-mode .scroll-btn:hover {
+  background: #e64800;
+}
+
+/* ========== States & Badges ========== */
+.badge-accent {
+  background: var(--cream-alt);
+  color: var(--royal);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-weight: 700;
+}
+
+.text-success { color: var(--shamrock) !important; }
+.text-info { color: var(--royal) !important; }
+.text-accent { color: var(--flame-orange) !important; }
+
+/* ========== Responsive Tweaks ========== */
+@media (max-width: 768px) {
+  .navbar { padding: 10px 16px; }
+  .nav-links { gap: 12px; display: none; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .filters { gap: 10px; padding: 10px; }
+  .filters input[type="text"], .filters select { width: calc(50% - 8px); }
+}
+
+@media (max-width: 520px) {
+  .logo { font-size: 18px; }
+  .nav-links { gap: 8px; display: none; }
+  .btn { font-size: 16px; padding: 10px 18px; }
+  .filters { gap: 8px; }
+  .filters input[type="text"], .filters select, .filters button { width: 100%; }
+}
+
+/* Button disabled state */
+.btn:disabled, button:disabled {
+  background: #d1d5db;
+  color: #8a8a8a;
+  cursor: not-allowed;
+  box-shadow: none;
+}

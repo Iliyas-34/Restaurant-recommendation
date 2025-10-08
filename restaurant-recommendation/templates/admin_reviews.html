@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Admin Reviews | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="admin-reviews-page">
+  <div class="wrapper">
+    <h1>🛠️ Admin: Review Management</h1>
+    <p class="subtitle">View and delete user reviews. This page reads from <code>data/reviews.json</code>.</p>
+
+    <div id="reviewsList" class="reviews-list">
+      {% if reviews %}
+        {% for r in reviews %}
+          <div class="review-card" data-id="{{ r.id }}">
+            <div class="row">
+              <div>
+                <h3>{{ r.username }} <span class="rating">⭐ {{ r.rating }}</span></h3>
+                <p class="date"><i>{{ r.date }}</i></p>
+              </div>
+              <button class="delete-btn" onclick="deleteReview('{{ r.id }}')">🗑️ Delete</button>
+            </div>
+            <p class="text">{{ r.text }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No reviews yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+.admin-reviews-page { padding: 24px; }
+.wrapper { max-width: 900px; margin: 0 auto; background: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.wrapper h1 { color: var(--royal); margin-bottom: 6px; }
+.subtitle { color: #6b7280; margin-bottom: 18px; }
+.reviews-list { display: flex; flex-direction: column; gap: 12px; }
+.review-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.review-card .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.review-card h3 { margin: 0; color: #111827; }
+.review-card .rating { margin-left: 8px; color: #D9822B; font-weight: 600; }
+.review-card .date { color: #6b7280; margin: 2px 0 8px 0; }
+.review-card .text { margin: 0; color: #374151; }
+.delete-btn { background: #b91c1c; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.delete-btn:hover { background: #991b1b; }
+</style>
+
+<script>
+function deleteReview(id) {
+  if (!confirm('Delete this review?')) return;
+  fetch(`/review/${id}`, { method: 'DELETE' })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to delete');
+      return res.json();
+    })
+    .then(() => {
+      const card = document.querySelector(`.review-card[data-id="${CSS.escape(id)}"]`);
+      if (card) card.remove();
+    })
+    .catch(err => {
+      alert('Error deleting review.');
+      console.error(err);
+    });
+}
+</script>
+
+{% endblock %}
+
+

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Login & Signup | Restaurant Finder{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-container">
+    <h1 class="text-daisy">🍴 Restaurant Finder</h1>
+    <p class="intro">Discover and save your favorite places to eat.</p>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Social Logins -->
+    {% if oauth_available %}
+      <div class="social">
+        {% if google_enabled %}<a class="btn google" href="{{ url_for('login_google') }}">🔴 Continue with Google</a>{% endif %}
+        {% if facebook_enabled %}<a class="btn facebook" href="{{ url_for('login_facebook') }}">🔵 Continue with Facebook</a>{% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Login Form -->
+    <div class="form-box">
+      <h2>Welcome Back</h2>
+      <form method="post" action="{{ url_for('auth_page') }}">
+        <input type="hidden" name="form_type" value="login">
+
+        <label for="username">Username</label>
+        <div class="input-icon"><span>👤</span><input type="text" name="username" id="username" required></div>
+
+        <label for="password">Password</label>
+        <div class="input-icon"><span>🔒</span><input type="password" name="password" id="password" required></div>
+
+        <button type="submit">✅ Login</button>
+      </form>
+      <p class="toggle">New here? <a href="#signup" onclick="showSignup()">Create your account</a></p>
+    </div>
+
+    <!-- Signup Form -->
+    <div class="form-box" id="signupBox" style="display:none;">
+      <h2>Create Your Account</h2>
+      <form method="post" action="{{ url_for('auth_page') }}">
+        <input type="hidden" name="form_type" value="signup">
+
+        <label for="username">Username</label>
+        <div class="input-icon"><span>👤</span><input type="text" name="username" id="signup_username" required></div>
+
+        <label for="email">Email</label>
+        <div class="input-icon"><span>✉️</span><input type="email" name="email" id="signup_email" required></div>
+
+        <label for="password">Password</label>
+        <div class="input-icon"><span>🔒</span><input type="password" name="password" id="signup_password" required></div>
+
+        <button type="submit">✨ Create Account</button>
+      </form>
+      <p class="toggle">Already have an account? <a href="#login" onclick="showLogin()">Log in</a></p>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Background */
+.auth-page { background: url("/static/images/restaurant-bg.jpg") no-repeat center center fixed; background-size: cover; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+
+/* Container */
+.auth-container { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 18px; max-width: 520px; width: 100%; text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,0.2); border: 1px solid rgba(217,130,43,0.2); }
+
+.auth-container h1 { color: var(--royal); margin-bottom: 10px; }
+.auth-container .intro { margin-bottom: 20px; color: var(--muted-text); }
+
+/* Flash Messages */
+.flash-container { margin-bottom: 20px; }
+.flash { padding: 10px; border-radius: 8px; margin: 6px 0; }
+.flash.success { background: #e8f5e9; color: var(--shamrock); border: 1px solid rgba(46,125,50,0.2); }
+.flash.error { background: #ffebee; color: #b71c1c; border: 1px solid rgba(183,28,28,0.2); }
+.flash.info { background: #e3f2fd; color: #0d47a1; border: 1px solid rgba(13,71,161,0.2); }
+
+/* Form boxes */
+.social { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 16px; }
+.btn { display: block; width: 100%; padding: 10px; border-radius: 10px; font-weight: 600; color: #fff; text-decoration: none; }
+.btn.google { background: #DB4437; }
+.btn.facebook { background: #1877F2; }
+.btn:hover { filter: brightness(0.95); }
+.form-box { margin: 20px 0; padding: 20px; border-radius: 14px; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,0.08); text-align: left; }
+.form-box h2 { margin-bottom: 12px; color: var(--royal); }
+label { font-weight: bold; color: var(--royal); }
+.input-icon { position: relative; }
+.input-icon span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+.input-icon input { display: block; width: 100%; margin: 8px 0 16px; padding: 12px 12px 12px 38px; border-radius: 12px; border: 1px solid #cfd6dd; background: #fafafa; transition: box-shadow .2s; }
+.input-icon input:focus { outline: none; box-shadow: 0 0 0 3px rgba(217,130,43,0.2); }
+button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: #fff; background: var(--space-orange); transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 12px rgba(217,130,43,0.25); }
+button:hover { background: var(--space-orange-700); transform: translateY(-1px); }
+.toggle { margin-top: 8px; text-align: center; }
+</style>
+
+<script>
+function showSignup(){ document.getElementById('signupBox').style.display='block'; window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}); }
+function showLogin(){ document.getElementById('signupBox').style.display='none'; window.scrollTo({top: 0, behavior: 'smooth'}); }
+</style>
+{% endblock %}

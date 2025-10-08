@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Restaurant Finder{% endblock %}</title>
+    <meta name="theme-color" content="#D9822B" />
+
+    <!-- Tailwind CSS (CDN) with custom palette -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              spaceorange: "#D9822B", // burnt orange (primary)
+              flame: "#FF4F00", // vivid orange (CTA/hover)
+              forest: "#2C5F2D", // deep green accent
+              shamrock: "#009E60", // green success
+              jonquil: "#E5E7EB", // light divider
+              cream: "#F2E8C4", // cream background
+              creamalt: "#F0ECE2", // alt cream
+              royal: "#5E243A", // deep burgundy for headers/nav
+              daisy: "#FFFFFF",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Main CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <!-- Font Awesome for crisp icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-pbU1Yk9+q5Q..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      :root {
+        --muted: #6b7280;
+      }
+      body {
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI,
+          Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+      /* Navbar */
+      .navbar {
+        background: #ff4f00;
+        box-shadow: 0 2px 10px rgba(255, 79, 0, 0.25);
+      }
+      .logo {
+        font-size: 22px;
+        font-weight: bold;
+      }
+      .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 18px;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+      }
+      .nav-links li a {
+        text-decoration: none;
+        color: white;
+        font-weight: 700;
+        font-size: 15px;
+        transition: color .25s ease, transform .15s ease, text-shadow .2s ease;
+        text-shadow: 0 0 0 rgba(0,0,0,0);
+      }
+      .nav-links li a:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      }
+
+      /* Hamburger */
+      .hamburger {
+        font-size: 26px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: white;
+        margin-right: 12px;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: #f2e8c4; /* cream */
+        overflow-x: hidden;
+        transition: width 0.35s ease-in-out;
+        padding-top: 60px;
+        z-index: 2000;
+      }
+      .sidebar.open {
+        width: 250px;
+      }
+      .sidebar a {
+        padding: 12px 24px;
+        text-decoration: none;
+        font-size: 18px;
+        color: #5e243a;
+        display: block;
+        transition: background 0.2s;
+      }
+      .sidebar a:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: #ff4f00;
+      }
+      .sidebar .closebtn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 30px;
+        cursor: pointer;
+      }
+      /* 🌗 Single Icon Theme Toggle */
+      .theme-toggle {
+        font-size: 24px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+      }
+      .theme-toggle:hover {
+        transform: rotate(15deg) scale(1.05);
+      }
+
+      /* Flash Messages */
+      .flash-messages {
+        text-align: center;
+        margin: 10px auto;
+      }
+      .flash-messages .success {
+        color: #2e7d32;
+        font-weight: bold;
+      }
+      .flash-messages .error {
+        color: #d9822b;
+        font-weight: bold;
+      }
+      .flash-messages .info {
+        color: #1f2933;
+        font-weight: bold;
+      }
+
+      /* Footer */
+      .footer {
+        margin-top: 40px;
+        padding: 28px 20px;
+        background: #2c5f2d; /* forest green */
+        color: #f2e8c4;
+        text-align: left;
+        border-top: 4px solid #ff4f00;
+        box-shadow: 0 -2px 10px rgba(255, 79, 0, 0.2);
+      }
+      .footer a {
+        color: #f2e8c4;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .footer a:hover {
+        color: #ffffff;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      @media (min-width: 720px) {
+        .footer-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+      .footer-title {
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: #f2e8c4;
+      }
+      .footer-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .footer-list li {
+        margin: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .fi {
+        width: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .footer-links li {
+        margin: 6px 0;
+      }
+      .footer-actions .ticket-btn {
+        display: inline-block;
+        background: #ff4f00;
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(255, 79, 0, 0.25);
+        transition: transform .15s ease, box-shadow .2s ease;
+      }
+      .footer-actions .ticket-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255,79,0,0.35); }
+      .subscribe {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .subscribe input {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: none;
+      }
+      .subscribe button {
+        background: #ff4f00;
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .muted {
+        color: #d8e4d3;
+        font-size: 12px;
+      }
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        margin-top: 18px;
+        padding-top: 14px;
+        text-align: center;
+      }
+
+      /* 🌙 Dark Mode Toggle Switch */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+      }
+      .switch input {
+        display: none;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--royal);
+      }
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+
+      /* 🌙 Dark Mode Styles */
+      body.dark-mode {
+        background: #2a1b20; /* warm dark */
+        color: #f5f1ee;
+      }
+      body.dark-mode .navbar,
+      body.dark-mode .footer,
+      body.dark-mode .sidebar {
+        background: #3a2330;
+        color: #f5f1ee;
+      }
+      body.dark-mode .nav-links li a,
+      body.dark-mode .sidebar a {
+        color: #f5f1ee;
+      }
+      body.dark-mode .nav-links li a:hover,
+      body.dark-mode .sidebar a:hover {
+        color: var(--flame-orange);
+      }
+      body.dark-mode .footer {
+        border-top: 3px solid #6f3a2a;
+      }
+      body.dark-mode .footer-bottom {
+        border-top-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* 🌙 Dark Mode for Cards & Modals */
+      body.dark-mode .card,
+      body.dark-mode .rec-card,
+      body.dark-mode .modal-content,
+      body.dark-mode .wishlist,
+      body.dark-mode .recommendations {
+        background: #2f1d25;
+        color: #f0e9e7;
+        box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.04);
+      }
+      body.dark-mode .card h3,
+      body.dark-mode .rec-card h4,
+      body.dark-mode .modal-content h3 {
+        color: var(--space-orange); /* copper accent for contrast */
+      }
+      body.dark-mode .card button,
+      body.dark-mode .scroll-btn {
+        background: var(--space-orange);
+        color: #fff;
+      }
+      body.dark-mode .card button:hover,
+      body.dark-mode .scroll-btn:hover {
+        background: var(--flame-orange);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <header class="navbar px-5 py-3 text-white">
+      <div class="flex items-center gap-3">
+        <button class="hamburger text-xl" onclick="openSidebar()">☰</button>
+        <div class="logo text-lg font-bold">🍴 Restaurant Finder</div>
+      </div>
+      <ul class="nav-links hidden md:flex items-center gap-5">
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('homepage') }}"
+            >Home</a
+          >
+        </li>
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('restaurants_page') }}"
+            >Restaurants</a
+          >
+        </li>
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('wishlist_page') }}"
+            >Wishlist</a
+          >
+        </li>
+
+        {% if session.get('user') %}
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('profile_page') }}"
+            >👋 {{ session['user'] }}</a
+          >
+        </li>
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('logout') }}"
+            >Logout</a
+          >
+        </li>
+        {% else %}
+        <li>
+          <a
+            class="hover:text-spaceorange transition-colors"
+            href="{{ url_for('login_page') }}"
+            >Login</a
+          >
+        </li>
+        {% endif %}
+        <!-- 🌗 Theme Toggle Icon -->
+        <li><span id="theme-toggle" class="theme-toggle">🌞</span></li>
+      </ul>
+    </header>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar text-white">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()"
+        >&times;</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('homepage') }}"
+        onclick="closeSidebar()"
+        >🏠 Home</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('restaurants_page') }}"
+        onclick="closeSidebar()"
+        >🍴 Restaurants</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('wishlist_page') }}"
+        onclick="closeSidebar()"
+        >❤️ Wishlist</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('pricing_page') }}"
+        onclick="closeSidebar()"
+        >💸 Pricing</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('tutorials_page') }}"
+        onclick="closeSidebar()"
+        >📘 Tutorials</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('docs_page') }}"
+        onclick="closeSidebar()"
+        >📚 Documentation</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('careers_page') }}"
+        onclick="closeSidebar()"
+        >🏢 Careers</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('faq_page') }}"
+        onclick="closeSidebar()"
+        >❓ FAQ</a
+      >
+
+      {% if session.get('user') %}
+      <a class="hover:bg-white/10 transition" href="#" onclick="closeSidebar()"
+        >👋 Welcome, {{ session['user'] }}</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('logout') }}"
+        onclick="closeSidebar()"
+        >🚪 Logout</a
+      >
+      {% else %}
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('login_page') }}"
+        onclick="closeSidebar()"
+        >🔑 Login</a
+      >
+      <a
+        class="hover:bg-white/10 transition"
+        href="{{ url_for('signup_page') }}"
+        onclick="closeSidebar()"
+        >🆕 Create Account</a
+      >
+      {% endif %}
+    </div>
+
+    <!-- Flash Messages -->
+    <div class="flash-messages max-w-4xl mx-auto px-4">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="{{ category }} my-2 px-4 py-3 rounded-md shadow-sm">
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="min-h-[60vh]">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4 class="footer-title">Contact</h4>
+          <ul class="footer-list">
+            <li><span class="fi">📞</span> +91-XXXXXXXXXX</li>
+            <li><span class="fi">📍</span> Your restaurant HQ address here</li>
+            <li><span class="fi">✉️</span> info@restaurantfinder.com</li>
+            <li><span class="fi">🛟</span> support@restaurantfinder.com</li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('homepage') }}">Home</a></li>
+            <li><a href="{{ url_for('restaurants_page') }}">Restaurants</a></li>
+            <li><a href="{{ url_for('wishlist_page') }}">Wishlist</a></li>
+            <li><a href="{{ url_for('pricing_page') }}">Pricing</a></li>
+            <li><a href="{{ url_for('tutorials_page') }}">Tutorials</a></li>
+            <li><a href="{{ url_for('docs_page') }}">Documentation</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Company</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('about_page') }}">About Us</a></li>
+            <li>
+              <a href="{{ url_for('contact_feedback_page') }}">Contact Us</a>
+            </li>
+            <li><a href="{{ url_for('careers_page') }}">Careers</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Support</h4>
+          <div class="footer-actions">
+            <a href="#" class="ticket-btn">🎫 Submit a Ticket</a>
+          </div>
+          <ul class="footer-links mt-2">
+            <li><a href="{{ url_for('faq_page') }}">FAQ</a></li>
+            <li>
+              <a href="{{ url_for('terms_page') }}">Terms & Conditions</a>
+            </li>
+            <li><a href="{{ url_for('privacy_page') }}">Privacy Policy</a></li>
+            <li><a href="{{ url_for('cookies_page') }}">Cookies Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">Subscribe</h4>
+          <form class="subscribe" onsubmit="return false;">
+            <input
+              type="email"
+              placeholder="Your email"
+              aria-label="Email address"
+            />
+            <button type="submit">Subscribe</button>
+          </form>
+          <p class="muted mt-2">Get tasty updates. Unsubscribe anytime.</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="text-sm">
+          © 2025 Restaurant Finder | Crafted with care by TechSplit — where code
+          meets cuisine
+        </p>
+      </div>
+    </footer>
+
+    <!-- Sidebar Script -->
+    <script>
+      function openSidebar() {
+        document.getElementById("sidebar").classList.add("open");
+      }
+      function closeSidebar() {
+        document.getElementById("sidebar").classList.remove("open");
+      }
+      // Tailwind classes for flash categories
+      (function () {
+        const map = {
+          success: "bg-green-700/10 text-green-700 border border-green-700/30",
+          error:
+            "bg-spaceorange/10 text-spaceorange border border-spaceorange/30",
+          info: "bg-royal/10 text-daisy border border-royal/30",
+        };
+        document.querySelectorAll(".flash-messages > div").forEach((el) => {
+          const cls = map[Array.from(el.classList).find((c) => map[c])];
+          if (cls) el.className += " " + cls;
+        });
+      })();
+      // Theme toggle logic
+      (function () {
+        const icon = document.getElementById("theme-toggle");
+        const body = document.body;
+        if (!icon) return;
+        const saved = localStorage.getItem("darkMode");
+        if (saved === "enabled") {
+          body.classList.add("dark-mode");
+          icon.textContent = "🌙";
+        } else {
+          icon.textContent = "🌞";
+        }
+        icon.addEventListener("click", () => {
+          body.classList.toggle("dark-mode");
+          const enabled = body.classList.contains("dark-mode");
+          icon.textContent = enabled ? "🌙" : "🌞";
+          localStorage.setItem("darkMode", enabled ? "enabled" : "disabled");
+          icon.style.opacity = "0.85";
+          setTimeout(() => {
+            icon.style.opacity = "";
+          }, 200);
+        });
+      })();
+    </script>
+
+    <!-- JS Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>

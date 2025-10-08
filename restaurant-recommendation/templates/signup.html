@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Sign Up | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="auth-page gradient-bg">
+  <div class="auth-container">
+    <h1 class="heading">Create Your Account</h1>
+    <p class="intro">Join Restaurant Finder and start saving your favorites.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="form-box">
+      <form method="post" action="{{ url_for('auth_page') }}" id="signupForm">
+        <input type="hidden" name="form_type" value="signup">
+
+        <label for="su_user">Username</label>
+        <div class="input-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.5 20.25a8.25 8.25 0 0115 0"/></svg>
+          <input type="text" name="username" id="su_user" required>
+        </div>
+
+        <label for="su_email">Email</label>
+        <div class="input-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke-width="1.8"/><path d="M22 8l-10 6L2 8" stroke-width="1.8"/></svg>
+          <input type="email" name="email" id="su_email" required>
+        </div>
+
+        <label for="su_pass">Password</label>
+        <div class="input-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input type="password" name="password" id="su_pass" required>
+        </div>
+
+        <button type="submit">➕ Sign Up</button>
+      </form>
+      <p class="toggle">Already have an account? <a href="{{ url_for('login_page') }}">Login</a></p>
+    </div>
+
+    <div class="social">
+      <a class="btn google" href="#">
+        <svg class="brand" viewBox="0 0 533.5 544.3"><path fill="#EA4335" d="M533.5 278.4c0-18.5-1.7-36.3-4.9-53.6H272.1v101.3h146.7c-6.3 34-25 62.7-53.6 81.9v67h86.7c50.7-46.7 81.6-115.5 81.6-196.6z"/><path fill="#34A853" d="M272.1 544.3c73.9 0 135.9-24.5 181.3-66.3l-86.7-67c-24.1 16.2-54.9 25.8-94.7 25.8-72.8 0-134.6-49-156.7-114.9H26.1v72.2c45.2 89.6 138.2 150.2 246 150.2z"/><path fill="#4A90E2" d="M115.4 321.9c-10.6-31.6-10.6-65.9 0-97.5v-72.2H26.1C-8.7 206.9-8.7 337.4 26.1 418.4l89.3-96.5z"/><path fill="#FBBC05" d="M272.1 107.7c40.8 0 77.6 14.1 106.7 41.7l80-80C407.6 26.1 345.6 0 272.1 0 164.3 0 71.3 60.6 26.1 150.2l89.3 72.2C137.5 156.7 199.3 107.7 272.1 107.7z"/></svg>
+        Continue with Google
+      </a>
+      <a class="btn facebook" href="#">
+        <svg class="brand" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 10-11.5 9.9v-7h-2v-3h2v-2.3c0-2 1.2-3.1 3-3.1.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.6-1.3 1.2V12h2.2l-.4 3h-1.8v7A10 10 0 0022 12"/></svg>
+        Continue with Facebook
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+.auth-page { background: url("/static/images/restaurant-bg.jpg") no-repeat center center fixed; background-size: cover; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px; position: relative; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.92), rgba(255,79,0,0.24)); }
+.auth-container { background: rgba(255,255,255,0.98); padding: 30px; border-radius: 18px; max-width: 520px; width: 100%; text-align: center; box-shadow: 0 18px 44px rgba(0,0,0,0.22); border: 1px solid rgba(0,0,0,0.06); backdrop-filter: saturate(1.1); }
+.heading { color: var(--royal); margin-bottom: 10px; font-weight: 700; font-size: 30px; letter-spacing: -0.01em; }
+.auth-container .intro { margin-bottom: 16px; color: var(--muted-text); }
+.flash-container { margin-bottom: 16px; }
+.flash { padding: 10px; border-radius: 8px; margin: 6px 0; }
+.flash.success { background: #e8f5e9; color: var(--shamrock); border: 1px solid rgba(46,125,50,0.2); }
+.flash.error { background: #ffebee; color: #b71c1c; border: 1px solid rgba(183,28,28,0.2); }
+.form-box { margin: 8px 0; padding: 20px; border-radius: 14px; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,0.08); text-align: left; }
+label { font-weight: 600; color: var(--royal); font-size: 16px; }
+.input-icon { position: relative; display: flex; align-items: center; }
+.input-icon .icon { position: absolute; left: 12px; width: 20px; height: 20px; color: #9ca3af; pointer-events: none; }
+.input-icon input { width: 100%; margin: 8px 0 16px; padding: 14px 12px 14px 44px; border-radius: 12px; border: 1px solid #cfd6dd; background: #ffffff; transition: box-shadow .2s, border-color .2s; font-size: 16px; color: #111827; }
+.input-icon input::placeholder { color: #9ca3af; }
+.input-icon input:focus { outline: none; box-shadow: 0 0 0 3px rgba(217,130,43,0.2); }
+button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: #fff; background: var(--space-orange); transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 12px rgba(217,130,43,0.25); }
+button:hover { background: var(--space-orange-700); transform: translateY(-1px); }
+.toggle { margin-top: 8px; text-align: center; }
+.social { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; border-radius: 10px; font-weight: 600; color: #fff; text-decoration: none; }
+.btn .brand { width: 18px; height: 18px; }
+.btn.google { background: #DB4437; }
+.btn.facebook { background: #1877F2; }
+</style>
+
+<script>
+document.getElementById('signupForm')?.addEventListener('submit', function(e) {
+  var u = document.getElementById('su_user').value.trim();
+  var em = document.getElementById('su_email').value.trim();
+  var p = document.getElementById('su_pass').value.trim();
+  if (!u || !em || !p) { e.preventDefault(); return; }
+  var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
+  if (!ok) { e.preventDefault(); alert('Please enter a valid email.'); }
+});
+</script>
+
+{% endblock %}
+
+

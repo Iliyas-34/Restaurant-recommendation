@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Contact & Feedback | Restaurant Finder{% endblock %}
+
+{% block content %}
+
+<section class="contact-feedback-page">
+  <div class="form-wrapper">
+    <h1 class="text-daisy">📞 Contact & ⭐ Feedback</h1>
+    <p class="intro">We’d love to hear from you! Send us a message or leave feedback about your experience.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="two-col">
+      <!-- Left: Contact Form -->
+      <div class="col">
+        <div class="form-container">
+          <h2>📩 Contact Us</h2>
+          <form method="post" action="{{ url_for('contact_feedback_page') }}" id="contactForm">
+            <input type="hidden" name="form_type" value="contact">
+            <label for="name">Name</label>
+            <div class="input-icon">
+              <span>👤</span>
+              <input type="text" id="name" name="name" placeholder="Your name" required>
+            </div>
+
+            <label for="email">Email</label>
+            <div class="input-icon">
+              <span>✉️</span>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required>
+            </div>
+
+            <label for="message">Message</label>
+            <div class="input-icon textarea">
+              <span>💬</span>
+              <textarea id="message" name="message" rows="5" placeholder="How can we help?" maxlength="500" required></textarea>
+            </div>
+            <div class="char-counter"><span id="msgCount">0</span>/500</div>
+
+            <button type="submit">📨 Send Message</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right: Feedback Form + Team Contacts -->
+      <div class="col">
+        <div class="form-container">
+          <h2>⭐ Leave Feedback</h2>
+          <form method="post" action="{{ url_for('contact_feedback_page') }}" id="feedbackForm">
+            <input type="hidden" name="form_type" value="feedback">
+
+            <label for="fb_name">Name</label>
+            <div class="input-icon">
+              <span>👤</span>
+              <input type="text" id="fb_name" name="name" placeholder="Your name" required>
+            </div>
+
+            <label for="fb_email">Email</label>
+            <div class="input-icon">
+              <span>✉️</span>
+              <input type="email" id="fb_email" name="email" placeholder="you@example.com" required>
+            </div>
+
+            <label for="fb_type">Feedback Type</label>
+            <select id="fb_type" name="feedback_type" required>
+              <option value="Bug">🐞 Bug</option>
+              <option value="Suggestion">💡 Suggestion</option>
+              <option value="Compliment">🎉 Compliment</option>
+            </select>
+
+            <label for="rating">Rating</label>
+            <select id="rating" name="rating" required>
+              <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+              <option value="4">⭐⭐⭐⭐ Good</option>
+              <option value="3">⭐⭐⭐ Average</option>
+              <option value="2">⭐⭐ Poor</option>
+              <option value="1">⭐ Very Bad</option>
+            </select>
+
+            <label for="fb_message">Feedback</label>
+            <div class="input-icon textarea">
+              <span>💬</span>
+              <textarea id="fb_message" name="message" rows="5" placeholder="Share your thoughts" maxlength="500" required></textarea>
+            </div>
+            <div class="char-counter"><span id="fbMsgCount">0</span>/500</div>
+
+            <button type="submit">✅ Submit Feedback</button>
+          </form>
+        </div>
+
+        <div class="team-contacts">
+          <h3>Team Contact</h3>
+          <p>For urgent issues: <b>support@restaurantfinder.app</b></p>
+          <p>Press & partnerships: <b>press@restaurantfinder.app</b></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback List -->
+    <div class="feedback-list">
+      <h2>💬 Recent Feedback</h2>
+      {% if feedback %}
+        {% for f in feedback %}
+          <div class="feedback-card">
+            <h3>{{ f.name }} <span class="rating">⭐ {{ f.rating }}</span></h3>
+            <p><i>{{ f.date }}</i></p>
+            <p>{{ f.message }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No feedback yet. Be the first to share your thoughts! ❤️</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+/* Background */
+.contact-feedback-page { background: url("/static/images/restaurant-bg.jpg") no-repeat center center fixed; background-size: cover; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; }
+
+.form-wrapper { background: rgba(255,255,255,0.92); padding: 30px; border-radius: 12px; max-width: 1100px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+/* Headings */
+.contact-feedback-page h1 { text-align: center; color: var(--space-orange); margin-bottom: 10px; }
+.contact-feedback-page .intro { text-align: center; margin-bottom: 20px; font-size: 16px; color: var(--royal); }
+
+/* Flash Messages */
+.flash-messages { margin: 20px 0; }
+.flash { padding: 12px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; text-align: center; }
+.flash.success { background: #e8f5e9; color: var(--shamrock); border: 1px solid rgba(46,125,50,0.2); }
+.flash.error { background: #ffebee; color: #b71c1c; border: 1px solid rgba(183,28,28,0.2); }
+
+/* Layout */
+.two-col { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 900px) { .two-col { grid-template-columns: 1fr 1fr; } }
+
+/* Form container */
+.form-container { background: #fff; padding: 20px; margin: 20px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.form-container h2 { margin-bottom: 15px; color: var(--royal); }
+form { display: flex; flex-direction: column; gap: 12px; }
+label { font-weight: bold; color: var(--royal); }
+input, textarea, select { padding: 10px; border: 1px solid #cfd6dd; border-radius: 10px; font-size: 14px; width: 100%; background: #fafafa; }
+/* Icons inside inputs */
+.input-icon { position: relative; display: flex; align-items: center; }
+.input-icon span { position: absolute; left: 12px; font-size: 16px; }
+.input-icon input, .input-icon textarea { padding-left: 36px; }
+.input-icon.textarea span { top: 12px; }
+.char-counter { text-align: right; font-size: 12px; color: #6b7280; margin-top: -6px; }
+button { background: var(--space-orange); color: white; font-weight: bold; border: none; padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(217,130,43,0.25); }
+button:hover { background: var(--space-orange-700); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(217,130,43,0.35); }
+
+/* Feedback list */
+.feedback-list { margin-top: 30px; }
+.feedback-list h2 { color: var(--space-orange); margin-bottom: 15px; }
+.feedback-card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.feedback-card h3 { margin: 0; color: var(--royal); }
+.feedback-card .rating { font-size: 14px; color: var(--space-orange); margin-left: 10px; }
+.feedback-card p { margin: 5px 0; color: var(--muted-text); }
+
+/* Team contacts */
+.team-contacts { background: rgba(255,255,255,0.9); border: 1px dashed rgba(0,0,0,0.1); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+</style>
+
+{% endblock %}

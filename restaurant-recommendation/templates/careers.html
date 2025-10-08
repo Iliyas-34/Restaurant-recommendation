@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Careers | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="page-wrap gradient-bg">
+  <div class="container">
+    <h1 class="heading">Join TechSplit</h1>
+    <p class="intro">Where code meets cuisine — help us build delightful food discovery experiences.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Frontend Engineer</h3>
+        <p>Build responsive, accessible UIs in a modern stack.</p>
+        <button class="cta">Apply Now</button>
+      </div>
+      <div class="card">
+        <h3>Backend Engineer</h3>
+        <p>Design scalable APIs and data workflows for insights.</p>
+        <button class="cta">Apply Now</button>
+      </div>
+      <div class="card">
+        <h3>UX Designer</h3>
+        <p>Craft warm, human-centric flows and components.</p>
+        <button class="cta">Apply Now</button>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Internship Opportunities</h3>
+      <p>We offer 8–12 week internships across product, engineering, and design.</p>
+      <button class="cta">Apply Now</button>
+    </div>
+  </div>
+</section>
+
+<style>
+.page-wrap { position: relative; padding: 28px 16px; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.5), rgba(255,79,0,0.05)); z-index: 0; }
+.container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+.heading { font-weight: 800; font-size: 28px; color: var(--royal); margin-bottom: 8px; }
+.intro { color: #374151; margin-bottom: 14px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+.card { background: #fff; border: 1px solid #eee; border-radius: 16px; padding: 16px; box-shadow: 0 12px 26px rgba(0,0,0,0.08); }
+.card h3 { margin: 0 0 6px; color: var(--royal); }
+.cta { background: #FF4F00; color: #fff; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.cta:hover { filter: brightness(0.95); }
+.mt { margin-top: 16px; }
+</style>
+
+{% endblock %}
+
+

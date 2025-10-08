@@ -1,0 +1,272 @@
+[
+  {
+    "timestamp": "2025-10-08T05:20:59.446125",
+    "type": "search",
+    "data": {
+      "query": "c"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T05:20:59.858112",
+    "type": "search",
+    "data": {
+      "query": "ca"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T05:21:00.211121",
+    "type": "search",
+    "data": {
+      "query": "caf"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T05:21:01.997989",
+    "type": "search",
+    "data": {
+      "query": "c"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:26.721775",
+    "type": "search",
+    "data": {
+      "query": "c"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:27.326287",
+    "type": "search",
+    "data": {
+      "query": "caf"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:31.138702",
+    "type": "search",
+    "data": {
+      "query": "cafe"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:42.450451",
+    "type": "search",
+    "data": {
+      "query": "caf"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:42.725247",
+    "type": "search",
+    "data": {
+      "query": "ca"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:43.428413",
+    "type": "search",
+    "data": {
+      "query": "cak"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:25:43.873182",
+    "type": "search",
+    "data": {
+      "query": "cake"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:39:37.602185",
+    "type": "chatbot",
+    "data": {
+      "query": "CAFE"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:39:41.833837",
+    "type": "chatbot",
+    "data": {
+      "query": "PIZZA"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:39:44.941882",
+    "type": "chatbot",
+    "data": {
+      "query": "SHUSI"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:39:56.790521",
+    "type": "chatbot",
+    "data": {
+      "query": "FAST"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:15.839293",
+    "type": "search",
+    "data": {
+      "query": "CA"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:16.239777",
+    "type": "search",
+    "data": {
+      "query": "CAF"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:17.617237",
+    "type": "search",
+    "data": {
+      "query": "CAFE"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:20.042052",
+    "type": "search",
+    "data": {
+      "query": "CAF"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:20.270901",
+    "type": "search",
+    "data": {
+      "query": "CA"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:21.409736",
+    "type": "search",
+    "data": {
+      "query": "CO"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:21.890212",
+    "type": "search",
+    "data": {
+      "query": "COF"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:22.189750",
+    "type": "search",
+    "data": {
+      "query": "COFF"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:23.675576",
+    "type": "search",
+    "data": {
+      "query": "COF"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:23.923454",
+    "type": "search",
+    "data": {
+      "query": "CO"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:25.455470",
+    "type": "search",
+    "data": {
+      "query": "PI"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:25.906511",
+    "type": "search",
+    "data": {
+      "query": "PIZ"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:26.105643",
+    "type": "search",
+    "data": {
+      "query": "PIZZ"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:27.696213",
+    "type": "search",
+    "data": {
+      "query": "PIZ"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-10-08T11:40:28.122601",
+    "type": "search",
+    "data": {
+      "query": "PI"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  }
+]

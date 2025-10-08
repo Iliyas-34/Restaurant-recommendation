@@ -1,0 +1,154 @@
+{% extends "base.html" %} 
+{% block title %}Restaurants | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="restaurant-page">
+  <h1 class="text-3xl md:text-4xl font-semibold text-center restaurant-header">🍴 Find Your Favorite Restaurant</h1>
+
+  <!--  Search + Filter + Sort Section 🔍-->
+  <section class="filters sticky-filters">
+  <form method="get" action="{{ url_for('restaurants_page') }}" onsubmit="/* allow GET submit to set ?search= */">
+    <div class="search-wrapper">
+      <input type="text" id="search" name="search" placeholder="Search restaurants by name or cuisine...">
+      <i class="fa fa-search search-icon" aria-hidden="true"></i>
+      <div id="searchSuggestion" class="search-suggest" aria-live="polite"></div>
+    </div>
+  </form>
+
+    <!-- City dropdown -->
+    <select id="cityFilter">
+      <option value="">Select City</option>
+    </select>
+
+    <!-- Cuisine dropdown -->
+    <select id="cuisineFilter">
+      <option value="">Select Cuisine</option>
+    </select>
+
+    <select id="ratingFilter">
+      <option value="">All Ratings</option>
+      <option value="4">4★ & above</option>
+      <option value="3">3★ & above</option>
+      <option value="2">2★ & above</option>
+    </select>
+
+    <select id="sortFilter">
+      <option value="">Sort By</option>
+      <option value="rating">Rating (High → Low)</option>
+      <option value="votes">Votes (High → Low)</option>
+      <option value="cost_low">Cost (Low → High)</option>
+      <option value="cost_high">Cost (High → Low)</option>
+    </select>
+
+    <button class="px-4 py-2 rounded-lg bg-spaceorange text-white font-semibold shadow hover:bg-[#b56a1e] transition" onclick="loadRestaurants()">Apply</button>
+  </section>
+
+  <!-- ⭐ Recommendations Slider -->
+  <section class="recommendations">
+    <h2>⭐ Recommended for You</h2>
+    <div class="rec-slider-wrapper">
+      <button class="scroll-btn left" onclick="scrollLeft()">⬅</button>
+      <div class="rec-slider" id="recSlider"></div>
+      <button class="scroll-btn right" onclick="scrollRight()">➡</button>
+    </div>
+  </section>
+
+  <!-- 📋 Restaurant Grid -->
+  <main>
+    <h2 class="text-2xl font-semibold text-royal">All Restaurants</h2>
+    <div id="restaurantGrid" class="grid"></div>
+
+    <!-- Smart Pagination -->
+    <div id="pagination" class="mt-6"></div>
+
+    <div id="loading" style="display:none; text-align:center; margin:20px;">
+      <p>⏳ Loading restaurants...</p>
+    </div>
+  </main>
+
+  <!-- ❤️ Wishlist -->
+  <section id="wishlist" class="wishlist"></section>
+
+  <!-- 🔮 Modal -->
+  <div id="recModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle"></h3>
+      <div id="modalResults"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Main JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+// ✅ Load cities and cuisines dynamically from restaurants.json
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const response = await fetch("/api/filters");
+    const data = await response.json();
+
+    const citySet = new Set(data.cities || []);
+    const cuisineSet = new Set(data.cuisines || []);
+
+    // Populate cities
+    const cityFilter = document.getElementById("cityFilter");
+    citySet.forEach(city => {
+      const opt = document.createElement("option");
+      opt.value = city;
+      opt.textContent = city; // ✅ Full name
+      cityFilter.appendChild(opt);
+    });
+
+    // Populate cuisines
+    const cuisineFilter = document.getElementById("cuisineFilter");
+    cuisineSet.forEach(cuisine => {
+      const opt = document.createElement("option");
+      opt.value = cuisine;
+      opt.textContent = cuisine; // ✅ Full name
+      cuisineFilter.appendChild(opt);
+    });
+
+  } catch (err) {
+    console.error("Error loading cities/cuisines:", err);
+  }
+});
+</script>
+
+<style>
+/* Page backdrop and overlay */
+.restaurant-page {
+  position: relative;
+  min-height: calc(100vh - 160px);
+  background: url("{{ url_for('static', filename='images/restaurant-bg.jpg') }}") no-repeat center center/cover;
+  padding: 40px 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.restaurant-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  z-index: 0;
+}
+.restaurant-page > * { position: relative; z-index: 1; }
+
+/* Title */
+h1 { text-align: center; margin: 20px 0; font-size: 36px; color: var(--space-orange); }
+
+/* Sticky Filters refinements rely on global .filters styles */
+.sticky-filters { position: sticky; top: 70px; background: rgba(255,255,255,0.95); border-radius: 10px; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+/* Search wrapper layout */
+.search-wrapper { position: relative; display: flex; align-items: center; max-width: 400px; margin: 0 auto; }
+#search { flex: 1; padding: 10px 20px; border-radius: 30px; border: 1px solid #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.search-icon { margin-left: 10px; font-size: 20px; color: #FF4F00; cursor: pointer; }
+.search-suggest { position: absolute; left: 16px; top: calc(100% + 6px); background: #fff; color: #374151; border: 1px solid #f0d0c8; border-radius: 10px; padding: 6px 10px; font-size: 13px; box-shadow: 0 6px 16px rgba(0,0,0,0.08); display: none; }
+
+/* Warm header color */
+.restaurant-header { color: #FF4F00; font-weight: 600; }
+</style>
+
+{% endblock %}

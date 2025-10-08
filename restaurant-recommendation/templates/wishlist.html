@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Wishlist | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="wishlist-page">
+  <h1 class="text-daisy">❤️ My Wishlist</h1>
+
+  <!-- 📋 Wishlist Grid -->
+  <main>
+    <div id="wishlistGrid" class="grid"></div>
+  </main>
+</section>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<style>
+/* Page bg overlay */
+.wishlist-page { position: relative; min-height: calc(100vh - 160px); background: url("{{ url_for('static', filename='images/restaurant-bg.jpg') }}") no-repeat center center/cover; padding: 40px 20px; box-sizing: border-box; overflow: hidden; }
+.wishlist-page::before { content: ""; position: absolute; inset: 0; background: rgba(229,231,235,0.45); z-index: 0; }
+.wishlist-page > * { position: relative; z-index: 1; }
+
+/* Title */
+h1 { text-align: center; margin: 20px 0; font-size: 36px; color: var(--space-orange); }
+
+/* Grid: rely on global .grid and .card styles for consistency */
+.grid { padding: 20px; }
+.remove-btn { margin: 10px 16px 16px; background: #b91c1c; color: #fff; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.remove-btn:hover { background: #991b1b; }
+</style>
+
+{% endblock %}

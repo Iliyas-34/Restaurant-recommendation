@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Cookies Policy | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="legal-wrap gradient-bg">
+  <div class="container">
+    <h1 class="heading">Cookies Policy</h1>
+    <p class="updated">Last updated: Oct 07, 2025</p>
+    <div class="legal">
+      <p>This website uses cookies to improve your experience. This is placeholder content describing cookie usage, categories, and preferences.</p>
+      <p>You may disable cookies in your browser, but some features may not work as intended.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+.legal-wrap { position: relative; padding: 28px 16px; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.5), rgba(255,79,0,0.05)); z-index: 0; }
+.container { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+.heading { font-weight: 800; font-size: 28px; color: var(--royal); margin-bottom: 8px; }
+.updated { color: #6b7280; margin-bottom: 12px; }
+.legal { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; box-shadow: 0 10px 24px rgba(0,0,0,0.06); max-height: 70vh; overflow: auto; }
+.legal p { color: #374151; line-height: 1.7; }
+</style>
+
+{% endblock %}
+
+

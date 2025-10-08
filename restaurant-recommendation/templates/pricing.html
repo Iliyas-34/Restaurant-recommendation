@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Pricing | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="pricing-page gradient-bg">
+  <div class="container">
+    <div class="head">
+      <h1 class="heading">Simple pricing, tailored by your data</h1>
+      <p class="sub">Estimated using your current restaurants, users, and enabled features.</p>
+      <div class="toggle">
+        <button class="toggle-btn active" id="monthlyBtn">Monthly</button>
+        <button class="toggle-btn" id="yearlyBtn">Yearly <span class="save">save 15%</span></button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Free</h3>
+        <p class="price"><span id="freePrice">₹{{ tiers.free }}</span><span class="per">/mo</span></p>
+        <ul class="features">
+          <li>✔ Up to 50 restaurants</li>
+          <li>✔ Basic wishlist</li>
+          <li>✔ Community support</li>
+        </ul>
+        <button class="cta">Get Started</button>
+      </div>
+
+      <div class="card highlight">
+        <h3>Premium</h3>
+        <p class="price"><span id="premiumPrice">₹{{ tiers.premium }}</span><span class="per">/mo</span></p>
+        <ul class="features">
+          <li>✔ Unlimited restaurants</li>
+          <li>✔ Reviews & analytics</li>
+          <li>✔ Priority support</li>
+        </ul>
+        <button class="cta">Upgrade</button>
+      </div>
+
+      <div class="card">
+        <h3>Enterprise</h3>
+        <p class="price"><span id="enterprisePrice">₹{{ tiers.enterprise }}</span><span class="per">/mo</span></p>
+        <ul class="features">
+          <li>✔ Admin tools & SSO</li>
+          <li>✔ Custom SLAs</li>
+          <li>✔ Dedicated success manager</li>
+        </ul>
+        <button class="cta">Contact Sales</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div>Restaurants: <b>{{ metrics.num_restaurants }}</b></div>
+      <div>Users: <b>{{ metrics.num_users }}</b></div>
+      <div>Features: wishlist {{ 'on' if metrics.features.wishlist else 'off' }}, reviews {{ 'on' if metrics.features.reviews else 'off' }}, admin {{ 'on' if metrics.features.admin else 'off' }}</div>
+    </div>
+  </div>
+</section>
+
+<style>
+.pricing-page { position: relative; padding: 28px 16px; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.65), rgba(255,79,0,0.08)); z-index: 0; }
+.container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+.head { text-align: center; margin-bottom: 18px; }
+.heading { font-weight: 800; font-size: 30px; color: var(--royal); }
+.sub { color: var(--muted); }
+.toggle { display: inline-flex; background: #fff; border: 1px solid #eee; border-radius: 999px; padding: 4px; margin-top: 10px; }
+.toggle-btn { border: none; background: transparent; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+.toggle-btn.active { background: #FF4F00; color: #fff; }
+.toggle .save { font-weight: 700; color: #2C5F2D; margin-left: 4px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 10px; }
+@media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+.card { background: #fff; border-radius: 16px; padding: 18px; box-shadow: 0 14px 30px rgba(0,0,0,0.08); border: 1px solid #eee; }
+.card.highlight { border-color: #FF4F00; box-shadow: 0 16px 34px rgba(255,79,0,0.18); }
+.card h3 { margin: 0 0 8px 0; color: var(--royal); font-size: 20px; }
+.price { font-size: 28px; font-weight: 800; color: #111827; }
+.price .per { font-size: 14px; color: #6b7280; margin-left: 4px; }
+.features { list-style: none; padding: 0; margin: 10px 0 16px; color: #374151; }
+.features li { margin: 6px 0; }
+.cta { width: 100%; border: none; background: #FF4F00; color: white; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(255,79,0,0.25); }
+.cta:hover { filter: brightness(0.95); }
+.meta { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 14px; color: #374151; }
+@media (min-width: 600px) { .meta { grid-template-columns: repeat(3, 1fr); } }
+</style>
+
+<script>
+(function(){
+  const mBtn = document.getElementById('monthlyBtn');
+  const yBtn = document.getElementById('yearlyBtn');
+  const factor = 0.85; // yearly ~ 15% off
+  const base = {
+    free: parseFloat(document.getElementById('freePrice').textContent.replace('₹','')) || 0,
+    premium: parseFloat(document.getElementById('premiumPrice').textContent.replace('₹','')) || 0,
+    enterprise: parseFloat(document.getElementById('enterprisePrice').textContent.replace('₹','')) || 0
+  };
+
+  function setPrices(mult){
+    document.getElementById('freePrice').textContent = '₹' + Math.round(base.free * mult);
+    document.getElementById('premiumPrice').textContent = '₹' + Math.round(base.premium * mult);
+    document.getElementById('enterprisePrice').textContent = '₹' + Math.round(base.enterprise * mult);
+  }
+  if(mBtn && yBtn){
+    mBtn.addEventListener('click', ()=>{ mBtn.classList.add('active'); yBtn.classList.remove('active'); setPrices(1); });
+    yBtn.addEventListener('click', ()=>{ yBtn.classList.add('active'); mBtn.classList.remove('active'); setPrices(12*factor); });
+  }
+})();
+</script>
+
+{% endblock %}
+
+

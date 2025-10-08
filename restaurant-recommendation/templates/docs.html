@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Documentation | Restaurant Finder{% endblock %}
+{% block content %}
+
+<section class="page-wrap gradient-bg">
+  <div class="container">
+    <h1 class="heading">Developer Documentation</h1>
+
+    <div class="doc-section">
+      <h2>API Endpoints</h2>
+      <pre><code>GET /api/restaurants
+GET /api/filters
+GET /api/recommendations
+GET /api/recommend?name=...
+GET /api/wishlist
+POST /api/wishlist
+DELETE /api/wishlist/&lt;name&gt;
+GET /user/orders
+GET /user/wishlist
+DELETE /wishlist/&lt;id&gt;
+</code></pre>
+    </div>
+
+    <div class="doc-section">
+      <h2>Data Schemas</h2>
+      <pre><code>// Restaurant
+{
+  "Restaurant Name": string,
+  "City": string,
+  "Cuisines": string,
+  "Aggregate rating": number
+}
+
+// Wishlist
+{ "name": string }
+
+// Order
+{ "id": string, "username": string, "restaurant": string, "items": string[], "date": string, "total": string }
+</code></pre>
+    </div>
+
+    <div class="doc-section">
+      <h2>Authentication Flow</h2>
+      <p>Users sign up or log in at <code>/auth</code> (or split pages), the session is established with <code>session['user']</code> and used for profile and user-specific routes.</p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Admin Controls</h2>
+      <p>Basic review management at <code>/admin/reviews</code> with DELETE <code>/review/&lt;id&gt;</code> for moderation.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+.page-wrap { position: relative; padding: 28px 16px; }
+.gradient-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(242,232,196,0.5), rgba(255,79,0,0.05)); z-index: 0; }
+.container { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+.heading { font-weight: 800; font-size: 28px; color: var(--royal); margin-bottom: 12px; }
+.doc-section { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 16px; margin-bottom: 12px; box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+pre { background: #0b1020; color: #e5e7eb; padding: 12px; border-radius: 8px; overflow: auto; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+</style>
+
+{% endblock %}
+
+
