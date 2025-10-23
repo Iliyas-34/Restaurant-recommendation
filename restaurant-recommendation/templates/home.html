@@ -20,63 +20,80 @@
         <i class="fa fa-search search-icon" onclick="submitSearch()" aria-hidden="true"></i>
       </div>
       
-      <!-- Enhanced Filters Section -->
-      <div class="enhanced-filters-section">
+      <!-- Modern Smart Filters Section -->
+      <div class="smart-filters-container">
         <div class="filters-header">
-          <h3>🎯 Smart Filters</h3>
-          <p>Get personalized recommendations based on your preferences</p>
+          <div class="filters-title">
+            <span class="filters-icon">🎯</span>
+            <h3>Smart Filters</h3>
+          </div>
+          <p class="filters-subtitle">Get personalized recommendations based on your preferences</p>
         </div>
         
-        <div class="filters-grid">
-          <div class="filter-card">
-            <div class="filter-icon">😊</div>
-            <label for="mood-filter">Mood</label>
-            <select id="mood-filter" class="enhanced-filter-select">
-              <option value="">Choose your mood</option>
-              <option value="happy">😊 Happy & Energetic</option>
-              <option value="sad">😢 Need Comfort Food</option>
-              <option value="angry">😠 Spicy & Bold</option>
-              <option value="relaxed">😌 Calm & Cozy</option>
-              <option value="excited">🤩 Adventurous</option>
-              <option value="bored">😐 Something New</option>
-            </select>
+        <div class="filters-row">
+          <div class="filter-item">
+            <div class="filter-label">
+              <span class="filter-emoji">😊</span>
+              <span class="filter-text">Mood</span>
+            </div>
+            <div class="filter-dropdown">
+              <select id="mood-filter" class="modern-select">
+                <option value="">Choose your mood</option>
+                <option value="happy">😊 Happy & Energetic</option>
+                <option value="sad">😢 Need Comfort Food</option>
+                <option value="angry">😠 Spicy & Bold</option>
+                <option value="relaxed">😌 Calm & Cozy</option>
+                <option value="excited">🤩 Adventurous</option>
+                <option value="bored">😐 Something New</option>
+              </select>
+            </div>
           </div>
           
-          <div class="filter-card">
-            <div class="filter-icon">🕐</div>
-            <label for="time-filter">Time of Day</label>
-            <select id="time-filter" class="enhanced-filter-select">
-              <option value="">Select time</option>
-              <option value="morning">🌅 Morning (6AM-12PM)</option>
-              <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
-              <option value="evening">🌆 Evening (6PM-10PM)</option>
-              <option value="night">🌙 Night (10PM-6AM)</option>
-            </select>
+          <div class="filter-item">
+            <div class="filter-label">
+              <span class="filter-emoji">🕐</span>
+              <span class="filter-text">Time of Day</span>
+            </div>
+            <div class="filter-dropdown">
+              <select id="time-filter" class="modern-select">
+                <option value="">Select time</option>
+                <option value="morning">🌅 Morning (6AM-12PM)</option>
+                <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
+                <option value="evening">🌆 Evening (6PM-10PM)</option>
+                <option value="night">🌙 Night (10PM-6AM)</option>
+              </select>
+            </div>
           </div>
           
-          <div class="filter-card">
-            <div class="filter-icon">🎉</div>
-            <label for="occasion-filter">Occasion</label>
-            <select id="occasion-filter" class="enhanced-filter-select">
-              <option value="">Pick an occasion</option>
-              <option value="dinner">🍽️ Romantic Dinner</option>
-              <option value="lunch">🥗 Business Lunch</option>
-              <option value="date">💕 Date Night</option>
-              <option value="birthday">🎂 Birthday Celebration</option>
-              <option value="party">🎉 Party & Fun</option>
-              <option value="meeting">💼 Meeting</option>
-              <option value="anniversary">💍 Anniversary</option>
-              <option value="family">👨‍👩‍👧‍👦 Family Time</option>
-            </select>
+          <div class="filter-item">
+            <div class="filter-label">
+              <span class="filter-emoji">🎉</span>
+              <span class="filter-text">Occasion</span>
+            </div>
+            <div class="filter-dropdown">
+              <select id="occasion-filter" class="modern-select">
+                <option value="">Pick an occasion</option>
+                <option value="dinner">🍽️ Romantic Dinner</option>
+                <option value="lunch">🥗 Business Lunch</option>
+                <option value="date">💕 Date Night</option>
+                <option value="birthday">🎂 Birthday Celebration</option>
+                <option value="party">🎉 Party & Fun</option>
+                <option value="meeting">💼 Meeting</option>
+                <option value="anniversary">💍 Anniversary</option>
+                <option value="family">👨‍👩‍👧‍👦 Family Time</option>
+              </select>
+            </div>
           </div>
         </div>
         
         <div class="filter-actions">
-          <button class="primary-filter-btn" onclick="applySmartFilters()">
-            <i class="fa fa-magic"></i> Find Perfect Match
+          <button class="filter-primary-btn" onclick="applySmartFilters()">
+            <span class="btn-icon">✨</span>
+            <span class="btn-text">Find Perfect Match</span>
           </button>
-          <button class="secondary-filter-btn" onclick="clearAllFilters()">
-            <i class="fa fa-refresh"></i> Clear Filters
+          <button class="filter-secondary-btn" onclick="clearAllFilters()">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">Clear Filters</span>
           </button>
         </div>
       </div>
@@ -1757,68 +1774,281 @@ async function loadCategory(category) {
   }
 }
 
-// ===== NEW PREMIUM SECTIONS JAVASCRIPT =====
+    // Debug function to test the API directly
+    function testSmartFiltersAPI() {
+      console.log('Testing Smart Filters API...');
+      fetch('/api/smart-filters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mood: 'happy',
+          time: 'night', 
+          occasion: 'birthday'
+        })
+      })
+      .then(response => {
+        console.log('Test response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Test data received:', data);
+        console.log('Test recommendations count:', data.recommendations ? data.recommendations.length : 0);
+        if (data.recommendations && data.recommendations.length > 0) {
+          console.log('Test successful! Showing results...');
+          showFilterResults(data.recommendations);
+        } else {
+          console.log('Test failed - no recommendations');
+        }
+      })
+      .catch(error => {
+        console.error('Test failed with error:', error);
+      });
+    }
 
-// AI Recommendation Functions
-async function getAIRecommendations() {
-  const foodPreference = document.getElementById('food-preference').value.trim();
-  const mood = document.getElementById('mood-select').value;
-  const time = document.getElementById('time-select').value;
-  const occasion = document.getElementById('occasion-select').value;
-  
-  if (!foodPreference) {
-    alert('Please tell us what kind of food you\'re craving!');
-    return;
-  }
-  
-  const recommendBtn = document.querySelector('.recommend-btn');
-  const btnText = recommendBtn.querySelector('.btn-text');
-  const btnLoading = recommendBtn.querySelector('.btn-loading');
-  
-  // Show loading state
-  recommendBtn.classList.add('loading');
-  btnText.style.display = 'none';
-  btnLoading.style.display = 'inline';
-  
-  try {
-    console.log('Getting AI recommendations...', { foodPreference, mood, time, occasion });
-    
-    const response = await fetch('/recommend', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_input: foodPreference,
+    // Smart Filters Functions
+    function applySmartFilters() {
+      const mood = document.getElementById('mood-filter').value;
+      const time = document.getElementById('time-filter').value;
+      const occasion = document.getElementById('occasion-filter').value;
+      
+      console.log('Applying filters:', { mood, time, occasion });
+      
+      // Add visual feedback
+      const primaryBtn = document.querySelector('.filter-primary-btn');
+      const originalText = primaryBtn.querySelector('.btn-text').textContent;
+      const originalIcon = primaryBtn.querySelector('.btn-icon').textContent;
+      
+      primaryBtn.querySelector('.btn-text').textContent = 'Finding...';
+      primaryBtn.querySelector('.btn-icon').textContent = '⏳';
+      primaryBtn.style.pointerEvents = 'none';
+      
+      // Prepare request data
+      const requestData = {
         mood: mood,
         time: time,
         occasion: occasion
+      };
+      
+      console.log('Sending request to /api/smart-filters:', requestData);
+      
+      // Make API call to smart filters endpoint
+      fetch('/api/smart-filters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
       })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Received data:', data);
+        console.log('Data type:', typeof data);
+        console.log('Data keys:', Object.keys(data || {}));
+        
+        if (data && data.error) {
+          console.error('API Error:', data.error);
+          showFilterResults([]);
+        } else if (data && data.recommendations && Array.isArray(data.recommendations) && data.recommendations.length > 0) {
+          console.log('Success! Found', data.recommendations.length, 'recommendations');
+          console.log('First recommendation:', data.recommendations[0]);
+          showFilterResults(data.recommendations);
+        } else {
+          console.log('No recommendations found or invalid data structure');
+          console.log('Recommendations:', data ? data.recommendations : 'data is null');
+          showFilterResults([]);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching recommendations:', error);
+        console.log('Trying fallback endpoint...');
+        
+        // Try fallback to the main recommend endpoint
+        return fetch('/recommend', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_input: 'restaurant',
+            mood: mood,
+            time: time,
+            occasion: occasion
+          })
+        });
+      })
+      .then(response => {
+        if (response && response.ok) {
+          return response.json();
+        }
+        throw new Error('Fallback also failed');
+      })
+      .then(data => {
+        console.log('Fallback data:', data);
+        if (data && data.recommendations && data.recommendations.length > 0) {
+          showFilterResults(data.recommendations);
+        } else {
+          showFilterResults([]);
+        }
+      })
+      .catch(error => {
+        console.error('All endpoints failed:', error);
+        showFilterResults([]);
+      })
+      .finally(() => {
+        // Reset button state
+        primaryBtn.querySelector('.btn-text').textContent = originalText;
+        primaryBtn.querySelector('.btn-icon').textContent = originalIcon;
+        primaryBtn.style.pointerEvents = 'auto';
+      });
     }
-    
-    const data = await response.json();
-    console.log('AI recommendations received:', data);
-    
-    if (data.error) {
-      throw new Error(data.error);
+
+    function clearAllFilters() {
+      // Clear all select values
+      document.getElementById('mood-filter').value = '';
+      document.getElementById('time-filter').value = '';
+      document.getElementById('occasion-filter').value = '';
+      
+      // Add visual feedback
+      const secondaryBtn = document.querySelector('.filter-secondary-btn');
+      const originalText = secondaryBtn.querySelector('.btn-text').textContent;
+      const originalIcon = secondaryBtn.querySelector('.btn-icon').textContent;
+      
+      secondaryBtn.querySelector('.btn-text').textContent = 'Cleared!';
+      secondaryBtn.querySelector('.btn-icon').textContent = '✅';
+      
+      // Clear results
+      clearFilterResults();
+      
+      setTimeout(() => {
+        secondaryBtn.querySelector('.btn-text').textContent = originalText;
+        secondaryBtn.querySelector('.btn-icon').textContent = originalIcon;
+      }, 1500);
     }
-    
-    displayRecommendations(data.recommendations, data.query);
-    
-  } catch (error) {
-    console.error('Error getting AI recommendations:', error);
-    alert(`Sorry, we couldn't get recommendations right now. Error: ${error.message}`);
-  } finally {
-    // Hide loading state
-    recommendBtn.classList.remove('loading');
-    btnText.style.display = 'inline';
-    btnLoading.style.display = 'none';
-  }
-}
+
+    function showFilterResults(recommendations) {
+      console.log('Showing results for:', recommendations);
+      console.log('Recommendations type:', typeof recommendations);
+      console.log('Recommendations length:', recommendations ? recommendations.length : 'null/undefined');
+      
+      // Use the existing smart-filter-results container
+      let resultsContainer = document.getElementById('smart-filter-results');
+      if (!resultsContainer) {
+        console.error('smart-filter-results container not found!');
+        return;
+      }
+      
+      // Show the container
+      resultsContainer.style.display = 'block';
+      
+      if (!recommendations || recommendations.length === 0) {
+        console.log('No recommendations found, showing no results message');
+        resultsContainer.innerHTML = `
+          <div class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3>No restaurants found</h3>
+            <p>Try adjusting your filters or search for something different</p>
+            <button class="btn btn-primary" onclick="clearAllFilters()">Clear Filters</button>
+          </div>
+        `;
+        return;
+      }
+      
+      console.log('Processing', recommendations.length, 'recommendations');
+      
+      // Create results HTML
+      let resultsHTML = `
+        <div class="results-header">
+          <h3>🍽️ Perfect Matches Found</h3>
+          <p>${recommendations.length} restaurants match your preferences</p>
+        </div>
+        <div class="results-grid">
+      `;
+      
+      recommendations.forEach((restaurant, index) => {
+        const rating = restaurant.rating || 0;
+        const cost = restaurant.cost || 0;
+        const matchScore = restaurant.match_score || 0;
+        
+        resultsHTML += `
+          <div class="restaurant-card" data-index="${index}">
+            <div class="card-header">
+              <h4 class="restaurant-name">${restaurant.name}</h4>
+              <div class="match-badge">${Math.round(matchScore * 100)}% match</div>
+            </div>
+            <div class="card-body">
+              <div class="restaurant-info">
+                <div class="cuisine-tags">
+                  ${restaurant.cuisines ? restaurant.cuisines.split(',').map(c => `<span class="cuisine-tag">${c.trim()}</span>`).join('') : ''}
+                </div>
+                <div class="restaurant-details">
+                  <div class="detail-item">
+                    <span class="detail-icon">⭐</span>
+                    <span class="detail-text">${rating.toFixed(1)}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-icon">💰</span>
+                    <span class="detail-text">₹${cost}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-icon">📍</span>
+                    <span class="detail-text">${restaurant.address || restaurant.location}</span>
+                  </div>
+                </div>
+                ${restaurant.dish_liked ? `
+                  <div class="dish-liked">
+                    <strong>Popular:</strong> ${restaurant.dish_liked}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="restaurant-actions">
+                ${restaurant.online_order ? '<span class="action-badge online-order">📱 Online Order</span>' : ''}
+                ${restaurant.book_table ? '<span class="action-badge book-table">🍽️ Book Table</span>' : ''}
+              </div>
+              <button class="btn btn-outline" onclick="viewRestaurantDetails('${restaurant.name}')">
+                View Details
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      resultsHTML += `
+        </div>
+        <div class="results-footer">
+          <button class="btn btn-secondary" onclick="clearAllFilters()">Try Different Filters</button>
+        </div>
+      `;
+      
+      resultsContainer.innerHTML = resultsHTML;
+      
+      // Scroll to results
+      resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearFilterResults() {
+      const resultsContainer = document.getElementById('smart-filter-results');
+      if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+      }
+    }
+
+    function viewRestaurantDetails(restaurantName) {
+      // Navigate to restaurant details page
+      window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
+    }
 
 function displayRecommendations(recommendations, query) {
   const resultsDiv = document.getElementById('recommendations-results');
@@ -2019,7 +2249,55 @@ function addScrollAnimations() {
 // Initialize scroll animations when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   addScrollAnimations();
+  
+  // Fix filter text visibility
+  fixFilterTextVisibility();
 });
+
+// Function to ensure filter text is always visible
+function fixFilterTextVisibility() {
+  const selects = document.querySelectorAll('.modern-select');
+  
+  selects.forEach(select => {
+    // Force text color on load
+    select.style.color = '#1F2937';
+    select.style.backgroundColor = 'white';
+    
+    // Add event listeners to maintain visibility
+    select.addEventListener('focus', function() {
+      this.style.color = '#1F2937';
+      this.style.backgroundColor = 'white';
+    });
+    
+    select.addEventListener('blur', function() {
+      this.style.color = '#1F2937';
+      this.style.backgroundColor = 'white';
+    });
+    
+    select.addEventListener('change', function() {
+      this.style.color = '#1F2937';
+      this.style.backgroundColor = 'white';
+    });
+    
+    // Force visibility on mouse events
+    select.addEventListener('mouseenter', function() {
+      this.style.color = '#1F2937';
+      this.style.backgroundColor = 'white';
+    });
+    
+    select.addEventListener('mouseleave', function() {
+      this.style.color = '#1F2937';
+      this.style.backgroundColor = 'white';
+    });
+  });
+  
+  // Also fix option elements
+  const options = document.querySelectorAll('.modern-select option');
+  options.forEach(option => {
+    option.style.color = '#1F2937';
+    option.style.backgroundColor = 'white';
+  });
+}
 </script>
 
 {% endblock %}

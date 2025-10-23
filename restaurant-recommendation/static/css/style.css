@@ -376,8 +376,15 @@ label { color: var(--royal); font-weight: 600; }
   padding: 80px 20px;
   animation: fadeIn 2s ease-in-out;
   background: url("../images/home-bg.jpg") no-repeat center center/cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: white;
   border-radius: 12px;
+  /* Prevent background from scaling */
+  position: relative;
+  overflow: hidden;
 }
 
 .hero h1 {

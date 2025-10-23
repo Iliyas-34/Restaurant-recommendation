@@ -31,6 +31,24 @@ except ImportError as e:
     print(f"ML recommendation engine not available: {e}")
     ML_ENGINE_AVAILABLE = False
 
+# Import Smart recommendation engine
+try:
+    from utils.smart_recommendation_engine import initialize_smart_engine, get_smart_recommendations
+    SMART_ENGINE_AVAILABLE = True
+    print("Smart recommendation engine imported successfully")
+except ImportError as e:
+    SMART_ENGINE_AVAILABLE = False
+    print(f"Smart recommendation engine not available: {e}")
+
+# Import Restaurant Data Processor
+try:
+    from utils.restaurant_processor import initialize_restaurant_processor, get_smart_recommendations as get_json_recommendations, get_fallback_recommendations
+    RESTAURANT_PROCESSOR_AVAILABLE = True
+    print("Restaurant processor imported successfully")
+except ImportError as e:
+    RESTAURANT_PROCESSOR_AVAILABLE = False
+    print(f"Restaurant processor not available: {e}")
+
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"  # change to a secure random key in production
 
@@ -1775,7 +1793,7 @@ def get_recommendations():
 @cache.memoize(timeout=300)  # Cache for 5 minutes
 def get_ml_recommendations():
     """
-    Advanced ML recommendation endpoint that takes:
+    Smart recommendation endpoint that takes:
     {
         "user_input": "North Indian food",
         "mood": "happy",
@@ -1784,9 +1802,10 @@ def get_ml_recommendations():
     }
     """
     try:
-        if not ML_ENGINE_AVAILABLE:
+        # Try smart engine first, fallback to ML engine
+        if not SMART_ENGINE_AVAILABLE and not ML_ENGINE_AVAILABLE:
             return jsonify({
-                "error": "ML recommendation engine not available",
+                "error": "No recommendation engine available",
                 "recommendations": []
             }), 503
         
@@ -1806,7 +1825,7 @@ def get_ml_recommendations():
         # Validate parameters
         valid_moods = ["happy", "sad", "angry", "relaxed", "excited", "bored"]
         valid_times = ["morning", "afternoon", "evening", "night"]
-        valid_occasions = ["birthday", "date", "party", "lunch", "dinner", "meeting", "anniversary"]
+        valid_occasions = ["birthday", "date", "party", "lunch", "dinner", "meeting", "anniversary", "family"]
         
         if mood not in valid_moods:
             mood = "happy"
@@ -1818,16 +1837,18 @@ def get_ml_recommendations():
         if not user_input:
             user_input = "restaurant"
         
-        # Log the recommendation request (DISABLED)
-        # log_user_interaction('ml_recommendation', {
-        #     'user_input': user_input,
-        #     'mood': mood,
-        #     'time': time,
-        #     'occasion': occasion
-        # })
-        
-        # Get recommendations from ML engine
-        recommendations = recommend_restaurants(user_input, n=5)
+        # Use smart engine if available
+        if SMART_ENGINE_AVAILABLE:
+            recommendations = get_smart_recommendations(
+                mood=mood,
+                time=time,
+                occasion=occasion,
+                search_query=user_input,
+                n=10
+            )
+        else:
+            # Fallback to ML engine
+            recommendations = get_recommendations(user_input, mood, time, occasion, n=10)
         
         # Format recommendations for response
         formatted_recommendations = []
@@ -1839,7 +1860,11 @@ def get_ml_recommendations():
                 "address": rec.get("location", ""),
                 "cost": rec.get("cost", 0),
                 "match_score": round(rec.get("match_score", 0), 3),
-                "type": rec.get("type", "hybrid")
+                "type": rec.get("type", "smart"),
+                "restaurant_type": rec.get("restaurant_type", ""),
+                "dish_liked": rec.get("dish_liked", ""),
+                "online_order": rec.get("online_order", False),
+                "book_table": rec.get("book_table", False)
             })
         
         return jsonify({
@@ -1850,17 +1875,264 @@ def get_ml_recommendations():
                 "time": time,
                 "occasion": occasion
             },
-            "total": len(formatted_recommendations)
+            "total": len(formatted_recommendations),
+            "engine_used": "smart" if SMART_ENGINE_AVAILABLE else "ml"
         })
         
     except Exception as e:
-        print(f"Error in ML recommendations: {e}")
+        print(f"Error in recommendations: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
             "error": "Internal server error",
             "recommendations": []
         }), 500
+
+# ---------- Smart Filters Endpoint ----------
+@app.route("/api/smart-filters", methods=["POST"])
+def smart_filters_recommendations():
+    """
+    Smart filters endpoint that takes mood, time, and occasion filters
+    and returns contextual restaurant recommendations from restaurants.json
+    """
+    try:
+        print("=== SMART FILTERS ENDPOINT CALLED ===")
+        
+        data = request.get_json()
+        print(f"Received data: {data}")
+        
+        if not data:
+            return jsonify({
+                "error": "No JSON data provided",
+                "recommendations": []
+            }), 400
+        
+        # Extract filter parameters
+        mood = data.get("mood", "").strip().lower()
+        time = data.get("time", "").strip().lower()
+        occasion = data.get("occasion", "").strip().lower()
+        
+        print(f"Processing filters: mood={mood}, time={time}, occasion={occasion}")
+        
+        # Use the new restaurant processor if available
+        if RESTAURANT_PROCESSOR_AVAILABLE:
+            print("Using restaurant processor for JSON data")
+            recommendations = get_json_recommendations(mood, time, occasion, limit=12)
+            
+            if recommendations:
+                # Format recommendations for frontend
+                formatted_recommendations = []
+                for rec in recommendations:
+                    formatted_recommendations.append({
+                        "name": rec.get("name", ""),
+                        "cuisines": rec.get("cuisines", ""),
+                        "rating": rec.get("rating", 0),
+                        "address": rec.get("address", ""),
+                        "cost": rec.get("cost", 0),
+                        "match_score": rec.get("match_score", 0),
+                        "restaurant_type": rec.get("restaurant_type", ""),
+                        "dish_liked": rec.get("dish_liked", ""),
+                        "online_order": rec.get("online_order", False),
+                        "book_table": rec.get("book_table", False),
+                        "price_category": rec.get("price_category", "moderate")
+                    })
+                
+                print(f"Returning {len(formatted_recommendations)} recommendations from JSON data")
+                
+                return jsonify({
+                    "recommendations": formatted_recommendations,
+                    "filters": {
+                        "mood": mood,
+                        "time": time,
+                        "occasion": occasion,
+                        "search_query": ""
+                    },
+                    "total": len(formatted_recommendations),
+                    "engine_used": "json_data_processor"
+                })
+            else:
+                print("No recommendations from JSON processor, trying fallback")
+                fallback_recs = get_fallback_recommendations(limit=12)
+                if fallback_recs:
+                    formatted_fallback = []
+                    for rec in fallback_recs:
+                        formatted_fallback.append({
+                            "name": rec.get("name", ""),
+                            "cuisines": rec.get("cuisines", ""),
+                            "rating": rec.get("rating", 0),
+                            "address": rec.get("address", ""),
+                            "cost": rec.get("cost", 0),
+                            "match_score": 0.8,
+                            "restaurant_type": rec.get("restaurant_type", ""),
+                            "dish_liked": rec.get("dish_liked", ""),
+                            "online_order": rec.get("online_order", False),
+                            "book_table": rec.get("book_table", False),
+                            "price_category": rec.get("price_category", "moderate")
+                        })
+                    
+                    return jsonify({
+                        "recommendations": formatted_fallback,
+                        "filters": {"mood": mood, "time": time, "occasion": occasion},
+                        "total": len(formatted_fallback),
+                        "engine_used": "fallback_json"
+                    })
+        
+        # Fallback to old method if processor not available
+        print("Restaurant processor not available, using old method")
+        base_recommendations = recommend_restaurants("restaurant", n=20)
+        print(f"Got {len(base_recommendations)} base recommendations")
+        
+        # Apply smart filtering based on mood, time, occasion
+        filtered_recommendations = []
+        
+        for rec in base_recommendations:
+            score = 0.3  # Base score
+            cuisines = rec.get("cuisines", "").lower()
+            restaurant_type = rec.get("restaurant_type", "").lower()
+            
+            print(f"Processing: {rec.get('name', 'Unknown')} - Cuisines: {cuisines}")
+            
+            # Mood-based scoring
+            if mood == "happy":
+                if any(keyword in cuisines for keyword in ["dessert", "fast food", "north indian", "chinese", "continental", "bbq", "american"]):
+                    score += 0.4
+                    print(f"  Happy mood match: +0.4")
+            elif mood == "sad":
+                if any(keyword in cuisines for keyword in ["north indian", "south indian", "chinese", "comfort", "cafe"]):
+                    score += 0.4
+                    print(f"  Sad mood match: +0.4")
+            elif mood == "angry":
+                if any(keyword in cuisines for keyword in ["spicy", "chinese", "mexican", "thai", "street food", "asian"]):
+                    score += 0.4
+                    print(f"  Angry mood match: +0.4")
+            elif mood == "relaxed":
+                if any(keyword in cuisines for keyword in ["continental", "italian", "mediterranean", "cafe", "european"]):
+                    score += 0.4
+                    print(f"  Relaxed mood match: +0.4")
+            elif mood == "excited":
+                if any(keyword in cuisines for keyword in ["japanese", "korean", "thai", "mexican", "fusion", "asian"]):
+                    score += 0.4
+                    print(f"  Excited mood match: +0.4")
+            elif mood == "bored":
+                if any(keyword in cuisines for keyword in ["multi-cuisine", "fusion", "continental", "asian", "mixed"]):
+                    score += 0.4
+                    print(f"  Bored mood match: +0.4")
+            
+            # Time-based scoring
+            if time == "morning":
+                if any(keyword in cuisines for keyword in ["south indian", "north indian", "continental", "cafe", "breakfast"]):
+                    score += 0.3
+                    print(f"  Morning time match: +0.3")
+            elif time == "afternoon":
+                if any(keyword in cuisines for keyword in ["north indian", "chinese", "continental", "multi-cuisine", "lunch"]):
+                    score += 0.3
+                    print(f"  Afternoon time match: +0.3")
+            elif time == "evening":
+                if any(keyword in cuisines for keyword in ["north indian", "continental", "italian", "fine dining", "european"]):
+                    score += 0.3
+                    print(f"  Evening time match: +0.3")
+            elif time == "night":
+                if any(keyword in cuisines for keyword in ["north indian", "chinese", "street food", "late night", "snacks"]):
+                    score += 0.3
+                    print(f"  Night time match: +0.3")
+            
+            # Occasion-based scoring
+            if occasion == "birthday":
+                if any(keyword in cuisines for keyword in ["desserts", "multi-cuisine", "continental", "north indian", "celebration"]):
+                    score += 0.3
+                    print(f"  Birthday occasion match: +0.3")
+            elif occasion == "date":
+                if any(keyword in cuisines for keyword in ["continental", "italian", "mediterranean", "fine dining", "romantic"]):
+                    score += 0.3
+                    print(f"  Date occasion match: +0.3")
+            elif occasion == "party":
+                if any(keyword in cuisines for keyword in ["multi-cuisine", "north indian", "chinese", "continental", "group"]):
+                    score += 0.3
+                    print(f"  Party occasion match: +0.3")
+            elif occasion == "family":
+                if any(keyword in cuisines for keyword in ["north indian", "south indian", "multi-cuisine", "continental", "traditional"]):
+                    score += 0.3
+                    print(f"  Family occasion match: +0.3")
+            elif occasion == "meeting":
+                if any(keyword in cuisines for keyword in ["continental", "multi-cuisine", "cafe", "business"]):
+                    score += 0.3
+                    print(f"  Meeting occasion match: +0.3")
+            elif occasion == "anniversary":
+                if any(keyword in cuisines for keyword in ["continental", "italian", "mediterranean", "fine dining", "special"]):
+                    score += 0.3
+                    print(f"  Anniversary occasion match: +0.3")
+            
+            final_score = min(score, 1.0)  # Cap at 1.0
+            print(f"  Final score: {final_score}")
+            
+            # Add to filtered results
+            filtered_recommendations.append({
+                "name": rec.get("name", ""),
+                "cuisines": rec.get("cuisines", ""),
+                "rating": rec.get("rating", 0),
+                "address": rec.get("location", ""),
+                "cost": rec.get("cost", 0),
+                "match_score": final_score,
+                "restaurant_type": rec.get("restaurant_type", ""),
+                "dish_liked": rec.get("dish_liked", ""),
+                "online_order": rec.get("online_order", False),
+                "book_table": rec.get("book_table", False),
+                "price_category": "moderate"
+            })
+        
+        # Sort by match score and take top 12
+        filtered_recommendations.sort(key=lambda x: x["match_score"], reverse=True)
+        top_recommendations = filtered_recommendations[:12]
+        
+        print(f"Returning {len(top_recommendations)} recommendations")
+        
+        return jsonify({
+            "recommendations": top_recommendations,
+            "filters": {
+                "mood": mood,
+                "time": time,
+                "occasion": occasion,
+                "search_query": ""
+            },
+            "total": len(top_recommendations),
+            "engine_used": "legacy_smart_filtering"
+        })
+        
+    except Exception as e:
+        print(f"Error in smart filters: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Fallback: return basic recommendations
+        try:
+            fallback_recs = recommend_restaurants("restaurant", n=10)
+            formatted_fallback = []
+            for rec in fallback_recs:
+                formatted_fallback.append({
+                    "name": rec.get("name", ""),
+                    "cuisines": rec.get("cuisines", ""),
+                    "rating": rec.get("rating", 0),
+                    "address": rec.get("location", ""),
+                    "cost": rec.get("cost", 0),
+                    "match_score": 0.8,
+                    "restaurant_type": rec.get("restaurant_type", ""),
+                    "dish_liked": rec.get("dish_liked", ""),
+                    "online_order": rec.get("online_order", False),
+                    "book_table": rec.get("book_table", False),
+                    "price_category": "moderate"
+                })
+            
+            return jsonify({
+                "recommendations": formatted_fallback,
+                "filters": {"mood": "happy", "time": "evening", "occasion": "dinner"},
+                "total": len(formatted_fallback),
+                "engine_used": "emergency_fallback"
+            })
+        except:
+            return jsonify({
+                "error": "Unable to process request",
+                "recommendations": []
+            }), 500
 
 # ---------- Model Loading Functions ----------
 def load_trained_models():
@@ -2552,8 +2824,8 @@ def admin_logout():
 
 # ---------- Run ----------
 if __name__ == "__main__":
-    # Initialize ML recommendation engine
-    if ML_ENGINE_AVAILABLE:
+    # Initialize ML recommendation engine (disabled to avoid CSV dependency)
+    if False:  # Disabled ML engine to avoid zomato.csv dependency
         def _init_ml_engine():
             try:
                 print("Initializing ML recommendation engine...")
@@ -2566,6 +2838,39 @@ if __name__ == "__main__":
         
         # Initialize ML engine in background thread
         threading.Thread(target=_init_ml_engine, daemon=True).start()
+    
+    # Initialize Smart recommendation engine (disabled to avoid missing module)
+    if False:  # Disabled Smart engine to avoid missing module dependency
+        def _init_smart_engine():
+            try:
+                print("Initializing Smart recommendation engine...")
+                initialize_smart_engine()
+                print("Smart recommendation engine initialized successfully!")
+            except Exception as e:
+                print(f"Error initializing Smart recommendation engine: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Initialize Smart engine in background thread
+        threading.Thread(target=_init_smart_engine, daemon=True).start()
+    
+    # Initialize Restaurant Data Processor
+    if RESTAURANT_PROCESSOR_AVAILABLE:
+        def _init_restaurant_processor():
+            try:
+                print("Initializing Restaurant Data Processor...")
+                success = initialize_restaurant_processor()
+                if success:
+                    print("Restaurant Data Processor initialized successfully!")
+                else:
+                    print("Failed to initialize Restaurant Data Processor")
+            except Exception as e:
+                print(f"Error initializing Restaurant Data Processor: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Initialize Restaurant processor in background thread
+        threading.Thread(target=_init_restaurant_processor, daemon=True).start()
     
     # Load persisted predictor first (non-blocking startup if available)
     try:
