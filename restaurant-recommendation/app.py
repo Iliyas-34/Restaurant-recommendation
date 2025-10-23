@@ -828,6 +828,13 @@ def get_restaurants():
       - page (pagination, 1-based)
     """
     global restaurants
+    
+    # Debug: Check restaurants data
+    print(f"Debug: restaurants type: {type(restaurants)}, length: {len(restaurants) if restaurants else 0}")
+    if restaurants and len(restaurants) > 0:
+        print(f"Debug: First restaurant keys: {list(restaurants[0].keys()) if restaurants[0] else 'Empty'}")
+        print(f"Debug: First restaurant name: '{restaurants[0].get('Restaurant Name', 'MISSING')}'")
+    
     search = request.args.get("search", "").strip().lower()
     cities_raw = request.args.get("city", "").strip()
     cuisines_raw = request.args.get("cuisine", "").strip()
