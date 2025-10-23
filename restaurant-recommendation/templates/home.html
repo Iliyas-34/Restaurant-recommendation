@@ -2015,6 +2015,99 @@ async function loadCategory(category) {
       // Navigate to restaurant details page
       window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
     }
+    
+    // Fix text visibility in dropdowns and buttons
+    function fixTextVisibility() {
+      // Fix dropdown text visibility
+      const selects = document.querySelectorAll('.modern-select');
+      selects.forEach(select => {
+        // Force text color and visibility
+        select.style.color = '#1F2937';
+        select.style.backgroundColor = 'white';
+        select.style.opacity = '1';
+        select.style.visibility = 'visible';
+        select.style.textShadow = 'none';
+        select.style.fontWeight = '500';
+        
+        // Fix options
+        const options = select.querySelectorAll('option');
+        options.forEach(option => {
+          option.style.color = '#1F2937';
+          option.style.backgroundColor = 'white';
+          option.style.opacity = '1';
+          option.style.visibility = 'visible';
+          option.style.textShadow = 'none';
+          option.style.fontWeight = '500';
+        });
+      });
+      
+      // Fix button text visibility
+      const primaryBtn = document.querySelector('.filter-primary-btn');
+      if (primaryBtn) {
+        primaryBtn.style.color = 'white';
+        primaryBtn.style.textShadow = 'none';
+        primaryBtn.style.opacity = '1';
+        primaryBtn.style.visibility = 'visible';
+        primaryBtn.style.fontWeight = '700';
+        
+        const btnText = primaryBtn.querySelector('.btn-text');
+        const btnIcon = primaryBtn.querySelector('.btn-icon');
+        if (btnText) {
+          btnText.style.color = 'white';
+          btnText.style.textShadow = 'none';
+          btnText.style.opacity = '1';
+          btnText.style.visibility = 'visible';
+        }
+        if (btnIcon) {
+          btnIcon.style.color = 'white';
+          btnIcon.style.textShadow = 'none';
+          btnIcon.style.opacity = '1';
+          btnIcon.style.visibility = 'visible';
+        }
+      }
+      
+      const secondaryBtn = document.querySelector('.filter-secondary-btn');
+      if (secondaryBtn) {
+        secondaryBtn.style.color = '#6B7280';
+        secondaryBtn.style.textShadow = 'none';
+        secondaryBtn.style.opacity = '1';
+        secondaryBtn.style.visibility = 'visible';
+        secondaryBtn.style.fontWeight = '600';
+        
+        const btnText = secondaryBtn.querySelector('.btn-text');
+        const btnIcon = secondaryBtn.querySelector('.btn-icon');
+        if (btnText) {
+          btnText.style.color = '#6B7280';
+          btnText.style.textShadow = 'none';
+          btnText.style.opacity = '1';
+          btnText.style.visibility = 'visible';
+        }
+        if (btnIcon) {
+          btnIcon.style.color = '#6B7280';
+          btnIcon.style.textShadow = 'none';
+          btnIcon.style.opacity = '1';
+          btnIcon.style.visibility = 'visible';
+        }
+      }
+      
+      // Fix filter text labels
+      const filterTexts = document.querySelectorAll('.filter-text');
+      filterTexts.forEach(text => {
+        text.style.color = '#374151';
+        text.style.textShadow = 'none';
+        text.style.opacity = '1';
+        text.style.visibility = 'visible';
+        text.style.fontWeight = '600';
+      });
+    }
+    
+    // Apply fixes when page loads and when elements change
+    document.addEventListener('DOMContentLoaded', fixTextVisibility);
+    document.addEventListener('change', fixTextVisibility);
+    document.addEventListener('click', fixTextVisibility);
+    
+    // Also fix visibility periodically to catch any dynamic changes
+    setInterval(fixTextVisibility, 1000);
 
 function displayRecommendations(recommendations, query) {
   const resultsDiv = document.getElementById('recommendations-results');

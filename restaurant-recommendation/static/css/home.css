@@ -166,8 +166,10 @@ body, html {
 }
 
 /* Filters beside search bar - Fixed to prevent background scaling */
+/* Additional contrast and visibility fixes */
 .smart-filters-container {
-  background: rgba(255, 255, 255, 0.98);
+  /* Ensure proper background contrast */
+  background: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 40px;
@@ -182,6 +184,37 @@ body, html {
   min-height: 200px;
   /* Ensure container doesn't grow/shrink with content */
   box-sizing: border-box;
+}
+
+/* Ensure all text elements have proper contrast */
+.smart-filters-container h3,
+.smart-filters-container h4,
+.smart-filters-container p,
+.smart-filters-container span,
+.smart-filters-container div {
+  color: inherit !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Dark theme compatibility (if needed) */
+@media (prefers-color-scheme: dark) {
+  .smart-filters-container {
+    background: rgba(30, 30, 30, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .modern-select,
+  .modern-select option {
+    background-color: #2D2D2D !important;
+    color: #FFFFFF !important;
+    border-color: #4A4A4A !important;
+  }
+  
+  .filter-text {
+    color: #E5E5E5 !important;
+  }
 }
 
 /* Smart Filter Results Container */
@@ -342,17 +375,87 @@ body, html {
   margin: 0;
 }
 
-/* Ensure all text in filters is visible */
+/* COMPREHENSIVE TEXT VISIBILITY FIXES */
+
+/* Force visibility for all filter elements */
 .smart-filters-container * {
   color: inherit !important;
 }
 
-.smart-filters-container select,
-.smart-filters-container select option,
-.smart-filters-container select:focus,
-.smart-filters-container select:hover {
+/* Button text visibility */
+.filter-primary-btn,
+.filter-primary-btn *,
+.filter-primary-btn .btn-text,
+.filter-primary-btn .btn-icon {
+  color: white !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 700 !important;
+}
+
+.filter-secondary-btn,
+.filter-secondary-btn *,
+.filter-secondary-btn .btn-text,
+.filter-secondary-btn .btn-icon {
+  color: #6B7280 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 600 !important;
+}
+
+/* Dropdown text visibility - Multiple layers of protection */
+.modern-select,
+.modern-select option,
+.modern-select:focus,
+.modern-select:hover,
+.modern-select:active {
   color: #1F2937 !important;
   background-color: white !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 500 !important;
+}
+
+/* Specific dropdown option styling */
+.modern-select option {
+  color: #1F2937 !important;
+  background-color: white !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 500 !important;
+  padding: 12px 16px !important;
+}
+
+.modern-select option:checked {
+  color: #1F2937 !important;
+  background-color: #F3F4F6 !important;
+  font-weight: 600 !important;
+}
+
+.modern-select option:hover {
+  color: #1F2937 !important;
+  background-color: #F9FAFB !important;
+}
+
+/* Filter text labels */
+.filter-text {
+  color: #374151 !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Override any conflicting styles */
+.smart-filters-container select,
+.smart-filters-container select option,
+.smart-filters-container button,
+.smart-filters-container button * {
+  color: inherit !important;
   text-shadow: none !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -516,6 +619,20 @@ body, html {
   background: white !important;
   font-weight: 500;
   border: none;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.modern-select option:checked {
+  color: #1F2937 !important;
+  background: #F3F4F6 !important;
+  font-weight: 600;
+}
+
+.modern-select option:hover {
+  color: #1F2937 !important;
+  background: #F9FAFB !important;
 }
 
 /* Ensure dropdown text is always visible */
