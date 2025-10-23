@@ -1021,8 +1021,8 @@ def predict_next_token():
         return jsonify({"suggestion": "", "next_token": ""})
     
     try:
-        # Log user search interaction
-        log_user_interaction('search', {'query': text})
+        # Log user search interaction (DISABLED)
+        # log_user_interaction('search', {'query': text})
         
         vec = suggest_vectorizer.transform([text])
         pred = suggest_model.predict(vec)
@@ -1238,8 +1238,8 @@ def chatbot():
         if not query:
             return jsonify({"response": "Please ask me about any food or restaurant!"})
         
-        # Log chatbot interaction
-        log_user_interaction('chatbot', {'query': query})
+        # Log chatbot interaction (DISABLED)
+        # log_user_interaction('chatbot', {'query': query})
         
         if chatbot_vectorizer is None or chatbot_vectors is None:
             print("Chatbot not initialized yet")
@@ -1393,8 +1393,8 @@ def get_category_items():
         if not category:
             return jsonify({'items': []})
         
-        # Log category click interaction
-        log_user_interaction('category_click', {'category': category})
+        # Log category click interaction (DISABLED)
+        # log_user_interaction('category_click', {'category': category})
         
         print(f"Getting items for category: {category}")
         
@@ -1709,13 +1709,13 @@ def get_ml_recommendations():
         if not user_input:
             user_input = "restaurant"
         
-        # Log the recommendation request
-        log_user_interaction('ml_recommendation', {
-            'user_input': user_input,
-            'mood': mood,
-            'time': time,
-            'occasion': occasion
-        })
+        # Log the recommendation request (DISABLED)
+        # log_user_interaction('ml_recommendation', {
+        #     'user_input': user_input,
+        #     'mood': mood,
+        #     'time': time,
+        #     'occasion': occasion
+        # })
         
         # Get recommendations from ML engine
         recommendations = recommend_restaurants(user_input, n=5)
