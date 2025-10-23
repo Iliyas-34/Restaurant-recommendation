@@ -1844,10 +1844,10 @@ def search_restaurants():
         per_page = int(data.get("per_page", 20))
         sort_by = data.get("sort", "rating")  # rating, price, distance, name
         
-        # Start with all restaurants - use global df
-        global df
-        if df is None or df.empty:
-            print("Debug: DataFrame is None or empty")
+        # Start with all restaurants - use global restaurants list
+        global restaurants
+        if not restaurants or len(restaurants) == 0:
+            print("Debug: No restaurants data available")
             return jsonify({
                 "restaurants": [],
                 "total": 0,
@@ -1856,13 +1856,17 @@ def search_restaurants():
                 "total_pages": 0
             })
         
-        results = df.copy()
+        # Convert to DataFrame for easier filtering
+        results = pd.DataFrame(restaurants)
         print(f"Debug: Starting with {len(results)} restaurants")
         
         # Apply filters
         if query:
-            # Text search in combined features - handle NaN values
-            mask = results["Combined_Features"].fillna("").str.contains(query, case=False, na=False)
+            # Text search in restaurant name, cuisines, and city
+            search_text = (results["Restaurant Name"].fillna("").astype(str) + " " + 
+                          results["Cuisines"].fillna("").astype(str) + " " + 
+                          results["City"].fillna("").astype(str)).str.lower()
+            mask = search_text.str.contains(query.lower(), na=False)
             results = results[mask]
         
         if city:
@@ -1874,10 +1878,10 @@ def search_restaurants():
             results = results[mask]
         
         if rating_min > 0:
-            results = results[results["Rating"] >= rating_min]
+            results = results[results["Aggregate rating"] >= rating_min]
         
         if price_max < float('inf'):
-            results = results[results["Price"] <= price_max]
+            results = results[results["Average Cost for two"] <= price_max]
         
         # Apply mood/time/occasion filters using ML logic
         if mood or time_of_day or occasion:
@@ -1885,11 +1889,11 @@ def search_restaurants():
         
         # Sort results
         if sort_by == "rating":
-            results = results.sort_values("Rating", ascending=False)
+            results = results.sort_values("Aggregate rating", ascending=False)
         elif sort_by == "price":
-            results = results.sort_values("Price", ascending=True)
+            results = results.sort_values("Average Cost for two", ascending=True)
         elif sort_by == "name":
-            results = results.sort_values("Restaurant_Name", ascending=True)
+            results = results.sort_values("Restaurant Name", ascending=True)
         
         # Pagination
         total = len(results)
