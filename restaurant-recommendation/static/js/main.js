@@ -646,26 +646,18 @@ function handleSearchInput() {
     // Debounce the search
     searchTimeout = setTimeout(async () => {
         try {
-            // Try ML-based prediction first
-            const response = await fetch('/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: query })
-            });
-            
+            // Get suggestions from the new API
+            const response = await fetch(`/api/suggestions?q=${encodeURIComponent(query)}&limit=8`);
             const data = await response.json();
-            if (data.suggestion && data.suggestion !== query) {
-                displaySearchSuggestions([data.suggestion]);
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                displaySearchSuggestions(data.suggestions);
             } else {
-                // Fallback to search-based suggestions
-                await updateSearchSuggestions(query);
+                hideSearchSuggestions();
             }
         } catch (error) {
             console.error('Error getting suggestions:', error);
-            // Fallback to search-based suggestions
-            await updateSearchSuggestions(query);
+            hideSearchSuggestions();
         }
     }, 300);
 }
@@ -682,11 +674,25 @@ function displaySearchSuggestions(suggestions) {
         searchWrapper.appendChild(suggestionsContainer);
     }
     
-    suggestionsContainer.innerHTML = suggestions.map(suggestion => `
-        <div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">
-            <span class="suggestion-text">${suggestion}</span>
-        </div>
-    `).join('');
+    suggestionsContainer.innerHTML = suggestions.map(suggestion => {
+        const text = suggestion.text || suggestion;
+        const type = suggestion.type || 'restaurant';
+        const city = suggestion.city || '';
+        const cuisines = suggestion.cuisines || '';
+        
+        let icon = '🍽️';
+        if (type === 'cuisine') icon = '🍴';
+        else if (type === 'city') icon = '📍';
+        
+        return `
+            <div class="suggestion-item" onclick="selectSuggestion('${text.replace(/'/g, "\\'")}')">
+                <span class="suggestion-icon">${icon}</span>
+                <span class="suggestion-text">${text}</span>
+                ${city ? `<span class="suggestion-meta">${city}</span>` : ''}
+                ${cuisines ? `<span class="suggestion-meta">${cuisines}</span>` : ''}
+            </div>
+        `;
+    }).join('');
     
     suggestionsContainer.style.display = 'block';
 }

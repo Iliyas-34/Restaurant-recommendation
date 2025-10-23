@@ -838,7 +838,14 @@ def get_restaurants():
     filtered = restaurants
 
     if search:
-        filtered = [r for r in filtered if search in str(r.get("Restaurant_Name", "")).lower()]
+        # Search in restaurant name, cuisines, and city
+        search_lower = search.lower()
+        filtered = [r for r in filtered if (
+            search_lower in str(r.get("Restaurant Name", "")).lower() or
+            search_lower in str(r.get("Cuisines", "")).lower() or
+            search_lower in str(r.get("City", "")).lower() or
+            search_lower in str(r.get("Dish Liked", "")).lower()
+        )]
 
     if city_list:
         # exact match on City field (case-sensitive as stored); normalize both sides if you prefer
@@ -1005,7 +1012,57 @@ def category_redirect(name):
 
 
 # ---------- Predictive Typing Endpoint ----------
-@app.route("/predict", methods=["POST"])
+@app.route("/api/suggestions", methods=["GET"])
+def get_search_suggestions():
+    """Get search suggestions based on partial text"""
+    try:
+        query = request.args.get("q", "").strip().lower()
+        limit = int(request.args.get("limit", 10))
+        
+        if len(query) < 2:
+            return jsonify({"suggestions": []})
+        
+        suggestions = []
+        
+        # Get restaurant name suggestions
+        for restaurant in restaurants:
+            name = str(restaurant.get("Restaurant Name", "")).lower()
+            cuisines = str(restaurant.get("Cuisines", "")).lower()
+            city = str(restaurant.get("City", "")).lower()
+            
+            if query in name:
+                suggestions.append({
+                    "text": restaurant.get("Restaurant Name", ""),
+                    "type": "restaurant",
+                    "city": restaurant.get("City", ""),
+                    "cuisines": restaurant.get("Cuisines", "")
+                })
+            elif query in cuisines:
+                # Extract cuisine suggestions
+                cuisine_list = [c.strip() for c in cuisines.split(",")]
+                for cuisine in cuisine_list:
+                    if query in cuisine.lower() and cuisine not in [s["text"] for s in suggestions]:
+                        suggestions.append({
+                            "text": cuisine.strip(),
+                            "type": "cuisine"
+                        })
+            elif query in city:
+                if city not in [s["text"] for s in suggestions]:
+                    suggestions.append({
+                        "text": restaurant.get("City", ""),
+                        "type": "city"
+                    })
+            
+            if len(suggestions) >= limit:
+                break
+        
+        return jsonify({"suggestions": suggestions[:limit]})
+        
+    except Exception as e:
+        print(f"Error getting suggestions: {e}")
+        return jsonify({"suggestions": []})
+
+
 def predict_next_token():
     try:
         data = request.get_json(force=True) or {}
