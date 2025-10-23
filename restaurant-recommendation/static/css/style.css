@@ -229,6 +229,40 @@ label { color: var(--royal); font-weight: 600; }
   color: var(--royal);
 }
 
+/* ========== Button Styles ========== */
+.btn-primary {
+  background: var(--space-orange);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+}
+
+.btn-primary:hover {
+  background: #b56a1e;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
 /* ========== Pagination ========== */
 #pagination {
   text-align: center;

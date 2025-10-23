@@ -1,0 +1,530 @@
+/* Trending Searches Section */
+.trending-searches-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.trending-searches-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23E2E8F0" opacity="0.3"/><circle cx="75" cy="75" r="1" fill="%23E2E8F0" opacity="0.3"/><circle cx="50" cy="10" r="0.5" fill="%23E2E8F0" opacity="0.2"/><circle cx="10" cy="60" r="0.5" fill="%23E2E8F0" opacity="0.2"/><circle cx="90" cy="40" r="0.5" fill="%23E2E8F0" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.5;
+}
+
+.trending-header {
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+  z-index: 2;
+}
+
+.trending-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1F2937;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #D9822B, #FF4F00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.trending-header p {
+  font-size: 1.2rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.trending-item {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.trending-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(217, 130, 43, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.trending-item:hover::before {
+  left: 100%;
+}
+
+.trending-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: #D9822B;
+}
+
+.trending-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(217, 130, 43, 0.2);
+}
+
+.trending-content h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 8px 0;
+}
+
+.trending-content p {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Find Your Perfect Vibe Section */
+.perfect-vibe-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.perfect-vibe-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stars" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="40" cy="15" r="0.5" fill="white" opacity="0.05"/><circle cx="15" cy="40" r="0.5" fill="white" opacity="0.05"/><circle cx="35" cy="35" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/></svg>');
+  opacity: 0.3;
+}
+
+.vibe-header {
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+  z-index: 2;
+}
+
+.vibe-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-header p {
+  font-size: 1.2rem;
+  color: #D1D5DB;
+  margin: 0;
+}
+
+.vibe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.vibe-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.vibe-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vibe-card:hover::before {
+  left: 100%;
+}
+
+.vibe-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(217, 130, 43, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.vibe-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 10px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-content p {
+  font-size: 1rem;
+  color: #D1D5DB;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Search Results Section - Hidden by default */
+.search-results-section {
+  padding: 60px 0;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  min-height: 400px;
+  display: none !important; /* Hidden by default */
+}
+
+.search-results-section .results-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.search-results-section .results-header h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1F2937;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #D9822B, #FF4F00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.search-results-section .results-header p {
+  font-size: 1.1rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* Restaurant Grid */
+.restaurant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.restaurant-card {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.restaurant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(217, 130, 43, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.restaurant-card:hover::before {
+  left: 100%;
+}
+
+.restaurant-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.restaurant-cuisine {
+  color: #D9822B;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.restaurant-location {
+  color: #6B7280;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.restaurant-location::before {
+  content: '📍';
+  font-size: 0.9rem;
+}
+
+.restaurant-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.restaurant-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.restaurant-rating::before {
+  content: '⭐';
+  font-size: 0.9rem;
+}
+
+.restaurant-price {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.restaurant-price::before {
+  content: '💰';
+  margin-right: 5px;
+}
+
+.restaurant-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.restaurant-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.restaurant-btn.primary {
+  background: linear-gradient(135deg, #D9822B, #FF4F00);
+  color: white;
+}
+
+.restaurant-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 130, 43, 0.3);
+}
+
+.restaurant-btn.secondary {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.restaurant-btn.secondary:hover {
+  background: #E5E7EB;
+  color: #374151;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.pagination button {
+  padding: 10px 16px;
+  border: 2px solid #E5E7EB;
+  background: white;
+  color: #6B7280;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+  border-color: #D9822B;
+  color: #D9822B;
+}
+
+.pagination button.active {
+  background: #D9822B;
+  border-color: #D9822B;
+  color: white;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading State */
+.loading-restaurants {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6B7280;
+}
+
+.loading-restaurants .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #E5E7EB;
+  border-top: 4px solid #D9822B;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* No Results State */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6B7280;
+}
+
+.no-results h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #374151;
+}
+
+.no-results p {
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.no-results button {
+  background: linear-gradient(135deg, #D9822B, #FF4F00);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.no-results button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 130, 43, 0.3);
+}
+
+/* Additional Responsive Design */
+@media (max-width: 768px) {
+  .trending-header h2,
+  .vibe-header h2 {
+    font-size: 2rem;
+  }
+  
+  .trending-grid,
+  .vibe-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .trending-item {
+    padding: 20px;
+  }
+  
+  .vibe-card {
+    padding: 25px;
+  }
+  
+  .trending-searches-section,
+  .perfect-vibe-section {
+    padding: 60px 0;
+  }
+  
+  .restaurant-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .restaurant-card {
+    padding: 20px;
+  }
+  
+  .restaurant-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .restaurant-actions {
+    flex-direction: column;
+  }
+  
+  .restaurant-btn {
+    width: 100%;
+  }
+}

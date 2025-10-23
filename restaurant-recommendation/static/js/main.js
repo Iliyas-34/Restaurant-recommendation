@@ -100,14 +100,222 @@ function renderWishlist() {
 }
 
 // =================== Restaurants (fetch & render) ===================
+
+// Function to load all restaurants for restaurant page
+function loadAllRestaurants() {
+  console.log('🍽️ Loading all restaurants for restaurant page');
+  console.log('🔍 Current URL:', window.location.href);
+  console.log('🔍 Current pathname:', window.location.pathname);
+  
+  const list = document.getElementById("restaurantGrid");
+  const pagination = document.getElementById("pagination");
+  const loadingEl = document.getElementById("loading");
+  
+  console.log('🔍 Elements found:');
+  console.log('  - restaurantGrid:', list ? 'Found' : 'NOT FOUND');
+  console.log('  - pagination:', pagination ? 'Found' : 'NOT FOUND');
+  console.log('  - loading:', loadingEl ? 'Found' : 'NOT FOUND');
+  
+  if (!list) {
+    console.error('❌ Restaurant grid not found');
+    console.error('❌ Available elements:', document.querySelectorAll('[id]'));
+    return;
+  }
+  
+  if (loadingEl) {
+    loadingEl.style.display = "block";
+    console.log('⏳ Loading indicator shown');
+  }
+  
+  console.log('📡 Making API call to /api/restaurants?per_page=50');
+  
+  // Load all restaurants without any filters
+  fetch('/api/restaurants?per_page=50')
+    .then(res => {
+      console.log('📡 All restaurants API status:', res.status);
+      console.log('📡 Response headers:', res.headers);
+      return res.json();
+    })
+    .then(data => {
+      console.log('📊 All restaurants data received:', data);
+      console.log('📊 Data type:', typeof data);
+      console.log('📊 Data keys:', Object.keys(data));
+      
+      if (loadingEl) loadingEl.style.display = "none";
+      
+      if (list) list.innerHTML = "";
+      if (pagination) pagination.innerHTML = "";
+
+      if (!data || !data.restaurants || data.restaurants.length === 0) {
+        console.log('❌ No restaurants found in response');
+        console.log('❌ Data:', data);
+        if (list) {
+          list.innerHTML = `
+            <div class="no-results">
+              <h3>No restaurants available</h3>
+              <p>Please try again later.</p>
+              <button onclick="loadAllRestaurants()">Retry</button>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      console.log('✅ Rendering', data.restaurants.length, 'restaurants on restaurant page');
+      console.log('✅ First restaurant:', data.restaurants[0]);
+
+      // Render restaurant cards with proper images and complete details
+      if (list) {
+        try {
+          list.innerHTML = data.restaurants.map((r, index) => {
+            // Determine appropriate image based on cuisine
+            let imageSrc = '/static/images/restaurant-default.jpg';
+            const cuisines = (r.cuisines || '').toLowerCase();
+            
+            if (cuisines.includes('pizza') || cuisines.includes('italian')) {
+              imageSrc = '/static/images/pizza.jpg';
+            } else if (cuisines.includes('burger') || cuisines.includes('american')) {
+              imageSrc = '/static/images/burger.jpg';
+            } else if (cuisines.includes('chinese') || cuisines.includes('asian')) {
+              imageSrc = '/static/images/noodles.jpg';
+            } else if (cuisines.includes('indian') || cuisines.includes('curry')) {
+              imageSrc = '/static/images/curry.jpg';
+            } else if (cuisines.includes('dessert') || cuisines.includes('cake')) {
+              imageSrc = '/static/images/cake.jpg';
+            } else if (cuisines.includes('coffee') || cuisines.includes('cafe')) {
+              imageSrc = '/static/images/coffee.jpg';
+            } else if (cuisines.includes('sushi') || cuisines.includes('japanese')) {
+              imageSrc = '/static/images/sushi.jpg';
+            } else if (cuisines.includes('seafood')) {
+              imageSrc = '/static/images/seafood.jpg';
+            } else if (cuisines.includes('bbq') || cuisines.includes('barbecue')) {
+              imageSrc = '/static/images/bbq.jpg';
+            } else if (cuisines.includes('breakfast')) {
+              imageSrc = '/static/images/breakfast.jpg';
+            } else if (cuisines.includes('ice cream') || cuisines.includes('desserts')) {
+              imageSrc = '/static/images/icecream.jpg';
+            } else if (cuisines.includes('drinks') || cuisines.includes('bar')) {
+              imageSrc = '/static/images/drinks.jpg';
+            } else if (cuisines.includes('french')) {
+              imageSrc = '/static/images/french.jpg';
+            } else if (cuisines.includes('pasta')) {
+              imageSrc = '/static/images/pasta.jpg';
+            } else if (cuisines.includes('tacos') || cuisines.includes('mexican')) {
+              imageSrc = '/static/images/tacos.jpg';
+            } else if (cuisines.includes('vegan')) {
+              imageSrc = '/static/images/vegan.jpg';
+            } else if (cuisines.includes('arabian') || cuisines.includes('middle eastern')) {
+              imageSrc = '/static/images/arabian.jpg';
+            } else if (cuisines.includes('african')) {
+              imageSrc = '/static/images/african.jpg';
+            } else if (cuisines.includes('brazilian')) {
+              imageSrc = '/static/images/brazil.jpg';
+            } else {
+              // Use food images for variety
+              const foodImages = ['food1.jpg', 'food2.jpg', 'food3.jpg'];
+              imageSrc = `/static/images/${foodImages[index % foodImages.length]}`;
+            }
+            
+            return `
+              <div class="card" onclick="viewRestaurant('${escapeJsString(r.name || '')}')">
+                <img src="${imageSrc}" alt="${escapeHtml(r.name || 'Restaurant')}" 
+                     onerror="this.src='/static/images/restaurant-default.jpg'"
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                <div class="card-content">
+                  <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 1.2em;">${escapeHtml(r.name || 'Unknown Restaurant')}</h3>
+                  
+                  <div style="margin-bottom: 8px;">
+                    <span style="background: #e8f4fd; color: #2c3e50; padding: 4px 8px; border-radius: 12px; font-size: 0.9em; margin-right: 4px;">
+                      🍴 ${escapeHtml(r.cuisines || 'Unknown Cuisine')}
+                    </span>
+                  </div>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d;">
+                    <strong>📍 Location:</strong> ${escapeHtml(r.city || 'Unknown Location')}
+                  </p>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d;">
+                    <strong>🏢 Type:</strong> ${escapeHtml(r.type || 'Unknown Type')}
+                  </p>
+                  
+                  <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                    <span style="background: #f39c12; color: white; padding: 4px 8px; border-radius: 12px; font-weight: bold;">
+                      ⭐ ${escapeHtml(String(r.rating || 'N/A'))}
+                    </span>
+                    <span style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 12px; font-weight: bold;">
+                      ₹${escapeHtml(String(r.price || 'N/A'))}
+                    </span>
+                  </div>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d; font-size: 0.9em;">
+                    <strong>👍 Votes:</strong> ${escapeHtml(String(r.votes || 'N/A'))}
+                  </p>
+                  
+                  ${r.address ? `<p style="margin: 4px 0; color: #7f8c8d; font-size: 0.9em;">
+                    <strong>🏠 Address:</strong> ${escapeHtml(r.address)}
+                  </p>` : ''}
+                  
+                  <div style="margin-top: 12px; display: flex; gap: 8px;">
+                    <button class="btn-primary" onclick="event.stopPropagation(); viewRestaurant('${escapeJsString(r.name || '')}')" 
+                            style="flex: 1; padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                      View Details
+                    </button>
+                    <button class="btn-secondary" onclick="event.stopPropagation(); addToWishlist('${escapeJsString(r.name || '')}')" 
+                            style="flex: 1; padding: 8px 12px; background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                      ❤️ Wishlist
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+          console.log('✅ Restaurant cards rendered successfully with images and details');
+        } catch (error) {
+          console.error('❌ Error rendering restaurant cards:', error);
+          list.innerHTML = `
+            <div class="no-results">
+              <h3>Error rendering restaurants</h3>
+              <p>Please try again later.</p>
+              <button onclick="loadAllRestaurants()">Retry</button>
+            </div>
+          `;
+        }
+      }
+
+      renderPagination(Math.ceil((data.total || data.restaurants.length) / (data.per_page || data.restaurants.length)), data.page || 1);
+      
+      console.log('✅ All restaurants loaded successfully on restaurant page');
+    })
+    .catch(err => {
+      console.error("❌ Error loading all restaurants:", err);
+      console.error("❌ Error details:", err.message);
+      console.error("❌ Error stack:", err.stack);
+      
+      if (loadingEl) loadingEl.style.display = "none";
+      
+      if (list) {
+        list.innerHTML = `
+          <div class="no-results">
+            <h3>Error loading restaurants</h3>
+            <p>Please try again later.</p>
+            <button onclick="loadAllRestaurants()">Retry</button>
+          </div>
+        `;
+      }
+    });
+}
 function loadRestaurants(page = 1) {
+  console.log('🔄 loadRestaurants called with page:', page);
+  
   // support query from URL (?search=...)
   const urlParams = new URLSearchParams(window.location.search);
-  const search = (document.getElementById("search")?.value || urlParams.get('search') || "").trim();
+  const search = (document.getElementById("search-input")?.value || document.getElementById("search")?.value || urlParams.get('search') || "").trim();
   const city = document.getElementById("cityFilter")?.value || "";
   const cuisine = document.getElementById("cuisineFilter")?.value || "";
   const rating = document.getElementById("ratingFilter")?.value || "";
   const sort = document.getElementById("sortFilter")?.value || "";
+
+  console.log('🔍 Search params:', { search, city, cuisine, rating, sort });
 
   const params = new URLSearchParams();
   if (search) params.append("search", search);
@@ -116,13 +324,32 @@ function loadRestaurants(page = 1) {
   if (rating) params.append("rating", rating);
   if (sort) params.append("sort", sort);
   params.append("page", page);
+  
+  // For restaurant page, ensure we load all restaurants by default
+  const isRestaurantPage = document.getElementById("restaurantGrid")?.classList.contains('grid');
+  if (isRestaurantPage && !search && !city && !cuisine && !rating && !sort) {
+    // Load more restaurants per page on restaurant page
+    params.append("per_page", "50");
+  }
+
+  console.log('📡 API URL:', `/api/restaurants?${params.toString()}`);
+
+  // Show search results section only if it exists (home page)
+  const searchResultsSection = document.getElementById("search-results-section");
+  if (searchResultsSection) {
+    searchResultsSection.style.display = "block";
+  }
 
   const loadingEl = document.getElementById("loading");
   if (loadingEl) loadingEl.style.display = "block";
 
   fetch(`/api/restaurants?${params.toString()}`)
-    .then(res => res.json())
+    .then(res => {
+      console.log('📡 Response status:', res.status);
+      return res.json();
+    })
     .then(data => {
+      console.log('📊 Data received:', data);
       if (loadingEl) loadingEl.style.display = "none";
       const list = document.getElementById("restaurantGrid");
       const pagination = document.getElementById("pagination");
@@ -130,45 +357,228 @@ function loadRestaurants(page = 1) {
       if (pagination) pagination.innerHTML = "";
 
       if (!data || !data.restaurants || data.restaurants.length === 0) {
-        if (list) list.innerHTML = "<p>No restaurants found.</p>";
+        console.log('❌ No restaurants found');
+        if (list) {
+          list.innerHTML = `
+            <div class="no-results">
+              <h3>No restaurants found</h3>
+              <p>Try adjusting your search terms or filters.</p>
+              <button onclick="loadRestaurants()">Retry</button>
+            </div>
+          `;
+        }
         return;
       }
 
-      data.restaurants.forEach(r => {
-        const image = getRestaurantImage(r);
-        const html = `
-          <div class="card" style="position:relative;">
-            <span class="wishlist-icon" data-liked="false" onclick="toggleHeart(this, '${escapeJsString(r.name || "")}')">❤️</span>
-            <img src="${image}" alt="${escapeHtml(r.name || "Restaurant image")}" loading="lazy" onerror="this.onerror=null;this.src='/static/images/restaurant-default.jpg';">
-            <div class="card-content">
-              <h3>${escapeHtml(r.name || "")}</h3>
-              <p><b>City:</b> ${escapeHtml(r.city || "")}</p>
-              <p><b>Cuisine:</b> ${escapeHtml(r.cuisines || "")}</p>
-              <p><b>Rating:</b> ⭐ ${escapeHtml(r.rating || "")}</p>
-              <p><b>Cost for two:</b> ₹${escapeHtml(String(r.price || ""))}</p>
-              <p><b>Votes:</b> ${escapeHtml(String(r.votes || ""))}</p>
+      console.log('✅ Rendering', data.restaurants.length, 'restaurants');
+
+      // Render restaurant cards - use original structure for restaurant page, new structure for home page
+      if (list) {
+        // Check if we're on the restaurant page (has .grid class) or home page (has .restaurant-grid class)
+        const isRestaurantPage = list.classList.contains('grid');
+        
+        if (isRestaurantPage) {
+          // Enhanced restaurant page card structure with proper images and details
+          list.innerHTML = data.restaurants.map((r, index) => {
+            // Determine appropriate image based on cuisine
+            let imageSrc = '/static/images/restaurant-default.jpg';
+            const cuisines = (r.cuisines || '').toLowerCase();
+            
+            if (cuisines.includes('pizza') || cuisines.includes('italian')) {
+              imageSrc = '/static/images/pizza.jpg';
+            } else if (cuisines.includes('burger') || cuisines.includes('american')) {
+              imageSrc = '/static/images/burger.jpg';
+            } else if (cuisines.includes('chinese') || cuisines.includes('asian')) {
+              imageSrc = '/static/images/noodles.jpg';
+            } else if (cuisines.includes('indian') || cuisines.includes('curry')) {
+              imageSrc = '/static/images/curry.jpg';
+            } else if (cuisines.includes('dessert') || cuisines.includes('cake')) {
+              imageSrc = '/static/images/cake.jpg';
+            } else if (cuisines.includes('coffee') || cuisines.includes('cafe')) {
+              imageSrc = '/static/images/coffee.jpg';
+            } else if (cuisines.includes('sushi') || cuisines.includes('japanese')) {
+              imageSrc = '/static/images/sushi.jpg';
+            } else if (cuisines.includes('seafood')) {
+              imageSrc = '/static/images/seafood.jpg';
+            } else if (cuisines.includes('bbq') || cuisines.includes('barbecue')) {
+              imageSrc = '/static/images/bbq.jpg';
+            } else if (cuisines.includes('breakfast')) {
+              imageSrc = '/static/images/breakfast.jpg';
+            } else if (cuisines.includes('ice cream') || cuisines.includes('desserts')) {
+              imageSrc = '/static/images/icecream.jpg';
+            } else if (cuisines.includes('drinks') || cuisines.includes('bar')) {
+              imageSrc = '/static/images/drinks.jpg';
+            } else if (cuisines.includes('french')) {
+              imageSrc = '/static/images/french.jpg';
+            } else if (cuisines.includes('pasta')) {
+              imageSrc = '/static/images/pasta.jpg';
+            } else if (cuisines.includes('tacos') || cuisines.includes('mexican')) {
+              imageSrc = '/static/images/tacos.jpg';
+            } else if (cuisines.includes('vegan')) {
+              imageSrc = '/static/images/vegan.jpg';
+            } else if (cuisines.includes('arabian') || cuisines.includes('middle eastern')) {
+              imageSrc = '/static/images/arabian.jpg';
+            } else if (cuisines.includes('african')) {
+              imageSrc = '/static/images/african.jpg';
+            } else if (cuisines.includes('brazilian')) {
+              imageSrc = '/static/images/brazil.jpg';
+            } else {
+              // Use food images for variety
+              const foodImages = ['food1.jpg', 'food2.jpg', 'food3.jpg'];
+              imageSrc = `/static/images/${foodImages[index % foodImages.length]}`;
+            }
+            
+            return `
+              <div class="card" onclick="viewRestaurant('${escapeJsString(r.name || '')}')">
+                <img src="${imageSrc}" alt="${escapeHtml(r.name || 'Restaurant')}" 
+                     onerror="this.src='/static/images/restaurant-default.jpg'"
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                <div class="card-content">
+                  <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 1.2em;">${escapeHtml(r.name || 'Unknown Restaurant')}</h3>
+                  
+                  <div style="margin-bottom: 8px;">
+                    <span style="background: #e8f4fd; color: #2c3e50; padding: 4px 8px; border-radius: 12px; font-size: 0.9em; margin-right: 4px;">
+                      🍴 ${escapeHtml(r.cuisines || 'Unknown Cuisine')}
+                    </span>
+                  </div>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d;">
+                    <strong>📍 Location:</strong> ${escapeHtml(r.city || 'Unknown Location')}
+                  </p>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d;">
+                    <strong>🏢 Type:</strong> ${escapeHtml(r.type || 'Unknown Type')}
+                  </p>
+                  
+                  <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                    <span style="background: #f39c12; color: white; padding: 4px 8px; border-radius: 12px; font-weight: bold;">
+                      ⭐ ${escapeHtml(String(r.rating || 'N/A'))}
+                    </span>
+                    <span style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 12px; font-weight: bold;">
+                      ₹${escapeHtml(String(r.price || 'N/A'))}
+                    </span>
+                  </div>
+                  
+                  <p style="margin: 4px 0; color: #7f8c8d; font-size: 0.9em;">
+                    <strong>👍 Votes:</strong> ${escapeHtml(String(r.votes || 'N/A'))}
+                  </p>
+                  
+                  ${r.address ? `<p style="margin: 4px 0; color: #7f8c8d; font-size: 0.9em;">
+                    <strong>🏠 Address:</strong> ${escapeHtml(r.address)}
+                  </p>` : ''}
+                  
+                  <div style="margin-top: 12px; display: flex; gap: 8px;">
+                    <button class="btn-primary" onclick="event.stopPropagation(); viewRestaurant('${escapeJsString(r.name || '')}')" 
+                            style="flex: 1; padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                      View Details
+                    </button>
+                    <button class="btn-secondary" onclick="event.stopPropagation(); addToWishlist('${escapeJsString(r.name || '')}')" 
+                            style="flex: 1; padding: 8px 12px; background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                      ❤️ Wishlist
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          // New home page card structure
+          list.innerHTML = data.restaurants.map(r => `
+            <div class="restaurant-card" onclick="viewRestaurant('${escapeJsString(r.name || '')}')">
+              <div class="restaurant-name">${escapeHtml(r.name || 'Unknown Restaurant')}</div>
+              <div class="restaurant-cuisine">${escapeHtml(r.cuisines || 'Unknown Cuisine')}</div>
+              <div class="restaurant-location">${escapeHtml(r.city || 'Unknown Location')}</div>
+              <div class="restaurant-meta">
+                <div class="restaurant-rating">⭐ ${escapeHtml(String(r.rating || 'N/A'))}</div>
+                <div class="restaurant-price">₹${escapeHtml(String(r.price || 'N/A'))} for two</div>
+              </div>
+              <div class="restaurant-actions">
+                <button class="restaurant-btn primary" onclick="event.stopPropagation(); viewRestaurant('${escapeJsString(r.name || '')}')">View Details</button>
+                <button class="restaurant-btn secondary" onclick="event.stopPropagation(); addToWishlist('${escapeJsString(r.name || '')}')">❤️ Wishlist</button>
+              </div>
             </div>
-          </div>`;
-        if (list) list.insertAdjacentHTML("beforeend", html);
-      });
+          `).join('');
+        }
+      }
 
       renderPagination(Math.ceil((data.total || data.restaurants.length) / (data.per_page || data.restaurants.length)), data.page || 1);
+      
+      // Scroll to results only if search results section exists (home page)
+      if (searchResultsSection) {
+        searchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     })
     .catch(err => {
-      console.error("Error loading restaurants:", err);
+      console.error("❌ Error loading restaurants:", err);
       const list = document.getElementById("restaurantGrid");
-      if (list) list.innerHTML = "<p>Error loading restaurants.</p>";
+      const searchResultsSection = document.getElementById("search-results-section");
+      
+      // Only show error if there was an actual search query
+      const search = (document.getElementById("search-input")?.value || document.getElementById("search")?.value || "").trim();
+      
+      if (list) {
+        if (search) {
+          list.innerHTML = `
+            <div class="no-results">
+              <h3>No restaurants found</h3>
+              <p>Try adjusting your search terms or filters.</p>
+              <button onclick="clearSearch()">Clear Search</button>
+            </div>
+          `;
+        } else {
+          list.innerHTML = `
+            <div class="no-results">
+              <h3>No restaurants available</h3>
+              <p>Please try again later.</p>
+              <button onclick="loadRestaurants()">Retry</button>
+            </div>
+          `;
+        }
+      }
+      
+      if (searchResultsSection) {
+        // Hide search results section if no search query
+        searchResultsSection.style.display = "none";
+      }
+      
       if (loadingEl) loadingEl.style.display = "none";
     });
 }
 
-// helper to escape HTML (simple)
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+// Clear search function
+function clearSearch() {
+  const searchInput = document.getElementById('search-input') || document.getElementById('search');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+  
+  const searchResultsSection = document.getElementById("search-results-section");
+  if (searchResultsSection) {
+    searchResultsSection.style.display = "none";
+  }
+  
+  const restaurantGrid = document.getElementById("restaurantGrid");
+  if (restaurantGrid) {
+    restaurantGrid.innerHTML = "";
+  }
+  
+  const pagination = document.getElementById("pagination");
+  if (pagination) {
+    pagination.innerHTML = "";
+  }
+}
+
+// View restaurant function
+function viewRestaurant(restaurantName) {
+  // Navigate to restaurant details page
+  window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
+}
+
+// Add to wishlist function
+function addToWishlist(restaurantName) {
+  // Add to wishlist functionality
+  console.log('Adding to wishlist:', restaurantName);
+  // You can implement wishlist functionality here
 }
 // helper to escape for JS single-quoted string
 function escapeJsString(str) {
@@ -462,12 +872,18 @@ function loadFilters() {
 // =================== On page load ===================
 window.onload = function () {
   loadFilters();
-  loadRestaurants();
+  // Don't load restaurants automatically - only when user searches
   loadRecommendations();
   renderWishlist();
   // Smooth behavior for restaurant grid
   const grid = document.getElementById('restaurantGrid');
   if (grid) grid.style.scrollBehavior = 'smooth';
+  
+  // Ensure search results section is hidden by default
+  const searchResultsSection = document.getElementById("search-results-section");
+  if (searchResultsSection) {
+    searchResultsSection.style.display = "none";
+  }
 
   // Character counters
   const msg = document.getElementById('message');
@@ -623,95 +1039,8 @@ document.addEventListener("mouseout", function (e) {
   if (btn) btn.style.transform = "";
 });
 
-// =============== Predictive Typing Functionality ===============
-let searchTimeout;
-let currentSuggestions = [];
-
-// Enhanced search input handler with predictive typing
-function handleSearchInput() {
-    const searchInput = document.getElementById('search-input');
-    const query = searchInput.value.trim();
-    
-    // Clear previous timeout
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-    
-    // If query is too short, clear suggestions
-    if (query.length < 2) {
-        hideSearchSuggestions();
-        return;
-    }
-    
-    // Debounce the search
-    searchTimeout = setTimeout(async () => {
-        try {
-            // Get suggestions from the new API
-            const response = await fetch(`/api/suggestions?q=${encodeURIComponent(query)}&limit=8`);
-            const data = await response.json();
-            
-            if (data.suggestions && data.suggestions.length > 0) {
-                displaySearchSuggestions(data.suggestions);
-            } else {
-                hideSearchSuggestions();
-            }
-        } catch (error) {
-            console.error('Error getting suggestions:', error);
-            hideSearchSuggestions();
-        }
-    }, 300);
-}
-
-// Display search suggestions
-function displaySearchSuggestions(suggestions) {
-    const searchWrapper = document.querySelector('.search-wrapper');
-    let suggestionsContainer = document.getElementById('search-suggestions');
-    
-    if (!suggestionsContainer) {
-        suggestionsContainer = document.createElement('div');
-        suggestionsContainer.id = 'search-suggestions';
-        suggestionsContainer.className = 'search-suggestions';
-        searchWrapper.appendChild(suggestionsContainer);
-    }
-    
-    suggestionsContainer.innerHTML = suggestions.map(suggestion => {
-        const text = suggestion.text || suggestion;
-        const type = suggestion.type || 'restaurant';
-        const city = suggestion.city || '';
-        const cuisines = suggestion.cuisines || '';
-        
-        let icon = '🍽️';
-        if (type === 'cuisine') icon = '🍴';
-        else if (type === 'city') icon = '📍';
-        
-        return `
-            <div class="suggestion-item" onclick="selectSuggestion('${text.replace(/'/g, "\\'")}')">
-                <span class="suggestion-icon">${icon}</span>
-                <span class="suggestion-text">${text}</span>
-                ${city ? `<span class="suggestion-meta">${city}</span>` : ''}
-                ${cuisines ? `<span class="suggestion-meta">${cuisines}</span>` : ''}
-            </div>
-        `;
-    }).join('');
-    
-    suggestionsContainer.style.display = 'block';
-}
-
-// Hide search suggestions
-function hideSearchSuggestions() {
-    const suggestionsContainer = document.getElementById('search-suggestions');
-    if (suggestionsContainer) {
-        suggestionsContainer.style.display = 'none';
-    }
-}
-
-// Select a suggestion
-function selectSuggestion(suggestion) {
-    const searchInput = document.getElementById('search-input');
-    searchInput.value = suggestion;
-    hideSearchSuggestions();
-    applySmartFilters();
-}
+// =============== Search Functionality (No Predictions) ===============
+// Token prediction/autocomplete functionality removed as requested
 
 // =============== Smart Filters Functionality ===============
 async function applySmartFilters() {
@@ -1210,16 +1539,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize filter listeners for immediate updates
     initializeFilterListeners();
     
-    // Real-time search suggestions
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                updateSearchSuggestions(this.value);
-            }, 300);
-        });
-    }
+    // Search input functionality (no predictions)
+    // Token prediction removed as requested
     
     // Filter change handlers
     [moodFilter, timeFilter, occasionFilter].forEach(filter => {
@@ -1231,74 +1552,73 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function updateSearchSuggestions(query) {
-    // Implement search suggestions based on Zomato data
-    if (query.length < 2) return;
+// Search suggestions functionality removed as requested
+
+// Submit search function for the search button
+function submitSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.value.trim()) {
+        // Use the original loadRestaurants function
+        loadRestaurants();
+    }
+}
+
+// Trending searches functionality
+function searchTrending(searchTerm) {
+    console.log('Searching for trending term:', searchTerm);
     
-    try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&per_page=5`);
-        const data = await response.json();
+    // Set the search input value
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.value = searchTerm;
         
-        if (data.restaurants && data.restaurants.length > 0) {
-            // Extract unique suggestions from restaurant names and cuisines
-            const suggestions = new Set();
-            data.restaurants.forEach(restaurant => {
-                if (restaurant.name && restaurant.name.toLowerCase().includes(query.toLowerCase())) {
-                    suggestions.add(restaurant.name);
-                }
-                if (restaurant.cuisines) {
-                    restaurant.cuisines.split(',').forEach(cuisine => {
-                        const trimmedCuisine = cuisine.trim();
-                        if (trimmedCuisine.toLowerCase().includes(query.toLowerCase())) {
-                            suggestions.add(trimmedCuisine);
-                        }
-                    });
-                }
-            });
-            
-            if (suggestions.size > 0) {
-                displaySearchSuggestions(Array.from(suggestions).slice(0, 5));
-            }
+        // Trigger search
+        loadRestaurants();
+        
+        // Scroll to results if available
+        const resultsSection = document.getElementById('restaurantGrid');
+        if (resultsSection) {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    } catch (error) {
-        console.error('Error fetching search suggestions:', error);
     }
 }
 
-function displaySearchSuggestions(suggestions) {
-    const suggestionBox = document.getElementById('suggestion-box');
-    if (!suggestionBox) return;
+// Perfect vibe functionality
+function selectVibe(vibeType) {
+    console.log('Selected vibe:', vibeType);
     
-    let suggestionsHtml = '';
+    // Map vibe types to mood/time/occasion
+    const vibeMapping = {
+        'romantic': { mood: 'relaxed', time: 'evening', occasion: 'date' },
+        'family': { mood: 'happy', time: 'afternoon', occasion: 'family' },
+        'business': { mood: 'relaxed', time: 'afternoon', occasion: 'meeting' },
+        'casual': { mood: 'happy', time: 'afternoon', occasion: 'casual' },
+        'late-night': { mood: 'excited', time: 'night', occasion: 'party' },
+        'celebration': { mood: 'happy', time: 'evening', occasion: 'birthday' }
+    };
     
-    if (suggestions.length > 0) {
-        // Check if suggestions are restaurant objects or strings
-        if (typeof suggestions[0] === 'object' && suggestions[0].name) {
-            // Restaurant objects
-            suggestionsHtml = suggestions.map(restaurant => `
-                <div class="suggestion-item" onclick="selectSuggestion('${restaurant.name}')">
-                    <strong>${restaurant.name}</strong>
-                    <span class="suggestion-details">${restaurant.cuisines} • ${restaurant.city}</span>
-                </div>
-            `).join('');
-        } else {
-            // String suggestions
-            suggestionsHtml = suggestions.map(suggestion => `
-                <div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">
-                    <strong>${suggestion}</strong>
-                </div>
-            `).join('');
+    const vibeSettings = vibeMapping[vibeType];
+    if (vibeSettings) {
+        // Set the smart filters
+        const moodFilter = document.getElementById('mood-filter');
+        const timeFilter = document.getElementById('time-filter');
+        const occasionFilter = document.getElementById('occasion-filter');
+        
+        if (moodFilter) moodFilter.value = vibeSettings.mood;
+        if (timeFilter) timeFilter.value = vibeSettings.time;
+        if (occasionFilter) occasionFilter.value = vibeSettings.occasion;
+        
+        // Trigger smart filter search
+        if (typeof applySmartFilters === 'function') {
+            applySmartFilters();
+        }
+        
+        // Scroll to results
+        const resultsSection = document.getElementById('smart-filter-results');
+        if (resultsSection) {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
-    
-    suggestionBox.innerHTML = suggestionsHtml;
-    suggestionBox.style.display = suggestionsHtml ? 'block' : 'none';
-}
-
-function selectSuggestion(restaurantName) {
-    document.getElementById('search-input').value = restaurantName;
-    document.getElementById('suggestion-box').style.display = 'none';
-    updateFilteredResults();
 }
 
 async function updateFilteredResults() {
@@ -1306,7 +1626,7 @@ async function updateFilteredResults() {
     const mood = document.getElementById('mood-filter')?.value || '';
     const time = document.getElementById('time-filter')?.value || '';
     const occasion = document.getElementById('occasion-filter')?.value || '';
-    const searchQuery = document.getElementById('search-input')?.value || '';
+    const searchQuery = document.getElementById('search')?.value || document.getElementById('search-input')?.value || '';
     
     try {
         const searchParams = new URLSearchParams({

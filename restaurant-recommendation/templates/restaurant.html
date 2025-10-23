@@ -11,7 +11,6 @@
     <div class="search-wrapper">
       <input type="text" id="search" name="search" placeholder="Search restaurants by name or cuisine...">
       <i class="fa fa-search search-icon" aria-hidden="true"></i>
-      <div id="searchSuggestion" class="search-suggest" aria-live="polite"></div>
     </div>
   </form>
 
@@ -110,8 +109,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       cuisineFilter.appendChild(opt);
     });
 
+    // ✅ Load all restaurants by default when page loads
+    console.log('🍽️ Restaurant page loaded, calling loadAllRestaurants()');
+    loadAllRestaurants();
+    
+    // Backup call after a short delay in case the first one fails
+    setTimeout(() => {
+      const grid = document.getElementById("restaurantGrid");
+      if (grid && grid.innerHTML.trim() === "") {
+        console.log('🔄 Backup call to loadAllRestaurants()');
+        loadAllRestaurants();
+      }
+    }, 1000);
+
   } catch (err) {
     console.error("Error loading cities/cuisines:", err);
+  }
+});
+
+// Additional backup to ensure restaurants load
+window.addEventListener('load', function() {
+  console.log('🌐 Window loaded, checking if restaurants need to be loaded');
+  const grid = document.getElementById("restaurantGrid");
+  if (grid && grid.innerHTML.trim() === "") {
+    console.log('🔄 Window load backup call to loadAllRestaurants()');
+    loadAllRestaurants();
   }
 });
 </script>

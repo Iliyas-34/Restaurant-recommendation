@@ -57,6 +57,12 @@ cache = Cache(app, config={
     'CACHE_TYPE': 'simple',
     'CACHE_DEFAULT_TIMEOUT': 300  # 5 minutes
 })
+
+# Global variables for ML recommendations
+df = None
+cosine_sim = None
+tfidf = None
+enhanced_ml_engine = None
 # ---------- OAuth Blueprints ----------
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID") or ""
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET") or ""
@@ -203,10 +209,10 @@ if not isinstance(restaurants, list):
 
 print(f"Final dataset: {len(restaurants)} restaurants loaded")
 
-# ---------- ML Recommendations setup using cleaned dataset ----------
+# ---------- Enhanced ML Recommendations setup using restaurants.json ----------
 def initialize_ml_data():
-    """Initialize ML data and return the DataFrame"""
-    global df, cosine_sim, tfidf, restaurants
+    """Initialize enhanced ML data and return the DataFrame"""
+    global df, cosine_sim, tfidf, restaurants, enhanced_ml_engine
     
     try:
         # Reload restaurants data if empty
@@ -241,6 +247,19 @@ def initialize_ml_data():
                 print(f"Error reloading restaurants data: {e}")
                 restaurants = []
         
+        if not restaurants:
+            print("No restaurant data available for ML!")
+            return None
+        
+        # Initialize enhanced ML engine
+        try:
+            from utils.enhanced_ml_engine import EnhancedRestaurantML
+            enhanced_ml_engine = EnhancedRestaurantML(restaurants)
+            print("✅ Enhanced ML engine initialized successfully!")
+        except Exception as e:
+            print(f"❌ Error initializing enhanced ML engine: {e}")
+            enhanced_ml_engine = None
+        
         # Use the main restaurants dataset for ML
         df = pd.DataFrame(restaurants)
         print(f"Using main dataset with {len(df)} restaurants for ML")
@@ -273,10 +292,11 @@ def initialize_ml_data():
             df["Address"].astype(str)
         )
         
+        # Initialize basic TF-IDF for backward compatibility
         tfidf = TfidfVectorizer(stop_words="english", max_features=5000, ngram_range=(1, 3))
         tfidf_matrix = tfidf.fit_transform(df["Combined_Features"])
         cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-        print(f"ML similarity matrix created: {cosine_sim.shape}")
+        print(f"Basic ML similarity matrix created: {cosine_sim.shape}")
         
         return df
         
@@ -1914,8 +1934,48 @@ def smart_filters_recommendations():
         
         print(f"Processing filters: mood={mood}, time={time}, occasion={occasion}")
         
-        # Use the new restaurant processor if available
-        if RESTAURANT_PROCESSOR_AVAILABLE:
+        # Use the enhanced ML engine if available
+        if enhanced_ml_engine:
+            print("Using enhanced ML engine for recommendations")
+            recommendations = enhanced_ml_engine.get_recommendations(
+                mood=mood if mood else None,
+                time=time if time else None,
+                occasion=occasion if occasion else None,
+                limit=12
+            )
+            
+            if recommendations:
+                # Format recommendations for frontend
+                formatted_recommendations = []
+                for rec in recommendations:
+                    formatted_recommendations.append({
+                        "name": rec.get("name", ""),
+                        "cuisines": rec.get("cuisines", ""),
+                        "rating": rec.get("rating", 0),
+                        "address": rec.get("location", ""),
+                        "cost": rec.get("price", 0),
+                        "match_score": rec.get("similarity_score", 0),
+                        "restaurant_type": rec.get("type", ""),
+                        "dish_liked": rec.get("dish_liked", ""),
+                        "online_order": True,  # Default value
+                        "book_table": True,    # Default value
+                        "price_category": "moderate"  # Default value
+                    })
+                
+                print(f"Enhanced ML engine returned {len(formatted_recommendations)} recommendations")
+                return jsonify({
+                    "success": True,
+                    "recommendations": formatted_recommendations,
+                    "total": len(formatted_recommendations),
+                    "filters_applied": {
+                        "mood": mood,
+                        "time": time,
+                        "occasion": occasion
+                    }
+                })
+        
+        # Fallback to restaurant processor if available
+        elif RESTAURANT_PROCESSOR_AVAILABLE:
             print("Using restaurant processor for JSON data")
             recommendations = get_json_recommendations(mood, time, occasion, limit=12)
             

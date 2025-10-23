@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Home | Restaurant Finder{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trending_vibe.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <!-- Hero Section -->
@@ -16,7 +21,7 @@
     <div class="search-and-filters-container">
       <!-- Search Bar -->
       <div class="search-wrapper">
-        <input type="text" id="search-input" placeholder="Search food or place..." class="search-input-visible" oninput="handleSearchInput()" onblur="setTimeout(() => hideSearchSuggestions(), 200)">
+        <input type="text" id="search-input" placeholder="Search food or place..." class="search-input-visible" onblur="setTimeout(() => hideSearchSuggestions(), 200)">
         <i class="fa fa-search search-icon" onclick="submitSearch()" aria-hidden="true"></i>
       </div>
       
@@ -38,14 +43,14 @@
             </div>
             <div class="filter-dropdown">
               <select id="mood-filter" class="modern-select">
-                <option value="">Choose your mood</option>
-                <option value="happy">😊 Happy & Energetic</option>
-                <option value="sad">😢 Need Comfort Food</option>
-                <option value="angry">😠 Spicy & Bold</option>
-                <option value="relaxed">😌 Calm & Cozy</option>
-                <option value="excited">🤩 Adventurous</option>
-                <option value="bored">😐 Something New</option>
-              </select>
+              <option value="">Choose your mood</option>
+              <option value="happy">😊 Happy & Energetic</option>
+              <option value="sad">😢 Need Comfort Food</option>
+              <option value="angry">😠 Spicy & Bold</option>
+              <option value="relaxed">😌 Calm & Cozy</option>
+              <option value="excited">🤩 Adventurous</option>
+              <option value="bored">😐 Something New</option>
+            </select>
             </div>
           </div>
           
@@ -56,12 +61,12 @@
             </div>
             <div class="filter-dropdown">
               <select id="time-filter" class="modern-select">
-                <option value="">Select time</option>
-                <option value="morning">🌅 Morning (6AM-12PM)</option>
-                <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
-                <option value="evening">🌆 Evening (6PM-10PM)</option>
-                <option value="night">🌙 Night (10PM-6AM)</option>
-              </select>
+              <option value="">Select time</option>
+              <option value="morning">🌅 Morning (6AM-12PM)</option>
+              <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
+              <option value="evening">🌆 Evening (6PM-10PM)</option>
+              <option value="night">🌙 Night (10PM-6AM)</option>
+            </select>
             </div>
           </div>
           
@@ -72,16 +77,16 @@
             </div>
             <div class="filter-dropdown">
               <select id="occasion-filter" class="modern-select">
-                <option value="">Pick an occasion</option>
-                <option value="dinner">🍽️ Romantic Dinner</option>
-                <option value="lunch">🥗 Business Lunch</option>
-                <option value="date">💕 Date Night</option>
-                <option value="birthday">🎂 Birthday Celebration</option>
-                <option value="party">🎉 Party & Fun</option>
-                <option value="meeting">💼 Meeting</option>
-                <option value="anniversary">💍 Anniversary</option>
-                <option value="family">👨‍👩‍👧‍👦 Family Time</option>
-              </select>
+              <option value="">Pick an occasion</option>
+              <option value="dinner">🍽️ Romantic Dinner</option>
+              <option value="lunch">🥗 Business Lunch</option>
+              <option value="date">💕 Date Night</option>
+              <option value="birthday">🎂 Birthday Celebration</option>
+              <option value="party">🎉 Party & Fun</option>
+              <option value="meeting">💼 Meeting</option>
+              <option value="anniversary">💍 Anniversary</option>
+              <option value="family">👨‍👩‍👧‍👦 Family Time</option>
+            </select>
             </div>
           </div>
         </div>
@@ -103,6 +108,22 @@
   
   <!-- Smart Filter Results -->
   <div id="smart-filter-results" class="smart-filter-results" style="display: none;"></div>
+  
+  <!-- Restaurant Search Results -->
+  <section class="search-results-section" id="search-results-section" style="display: none !important;">
+    <div class="container">
+      <div class="results-header">
+        <h2>🔍 Search Results</h2>
+        <p id="search-results-count">Found restaurants matching your search</p>
+      </div>
+      <div id="restaurantGrid" class="restaurant-grid">
+        <!-- Restaurant results will be loaded here -->
+      </div>
+      <div id="pagination" class="pagination">
+        <!-- Pagination will be loaded here -->
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- Featured Restaurants Carousel -->
@@ -1840,17 +1861,17 @@ async function loadCategory(category) {
         
         // Try fallback to the main recommend endpoint
         return fetch('/recommend', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
             user_input: 'restaurant',
-            mood: mood,
-            time: time,
-            occasion: occasion
-          })
-        });
+        mood: mood,
+        time: time,
+        occasion: occasion
+      })
+    });
       })
       .then(response => {
         if (response && response.ok) {
@@ -2017,29 +2038,37 @@ async function loadCategory(category) {
     }
     
     // Fix text visibility in dropdowns and buttons
-    function fixTextVisibility() {
-      // Fix dropdown text visibility
-      const selects = document.querySelectorAll('.modern-select');
-      selects.forEach(select => {
-        // Force text color and visibility
-        select.style.color = '#1F2937';
-        select.style.backgroundColor = 'white';
-        select.style.opacity = '1';
-        select.style.visibility = 'visible';
-        select.style.textShadow = 'none';
-        select.style.fontWeight = '500';
-        
-        // Fix options
-        const options = select.querySelectorAll('option');
-        options.forEach(option => {
-          option.style.color = '#1F2937';
-          option.style.backgroundColor = 'white';
-          option.style.opacity = '1';
-          option.style.visibility = 'visible';
-          option.style.textShadow = 'none';
-          option.style.fontWeight = '500';
-        });
-      });
+        function fixTextVisibility() {
+          // Fix dropdown text visibility
+          const selects = document.querySelectorAll('.modern-select');
+          selects.forEach(select => {
+            // Force text color and visibility - MAXIMUM VISIBILITY
+            select.style.color = '#000000';
+            select.style.backgroundColor = 'white';
+            select.style.opacity = '1';
+            select.style.visibility = 'visible';
+            select.style.textShadow = 'none';
+            select.style.fontWeight = '800';
+            select.style.fontSize = '16px';
+            select.style.letterSpacing = '0.5px';
+            
+            // Fix options
+            const options = select.querySelectorAll('option');
+            options.forEach(option => {
+              option.style.color = '#000000';
+              option.style.backgroundColor = 'white';
+              option.style.opacity = '1';
+              option.style.visibility = 'visible';
+              option.style.textShadow = 'none';
+              option.style.fontWeight = '700';
+              option.style.fontSize = '16px';
+              option.style.letterSpacing = '0.3px';
+              option.style.border = 'none';
+              option.style.outline = 'none';
+              // Force dark text with maximum priority
+              option.setAttribute('style', option.getAttribute('style') + '; color: #000000 !important; background-color: white !important; font-weight: 700 !important;');
+            });
+          });
       
       // Fix button text visibility
       const primaryBtn = document.querySelector('.filter-primary-btn');
@@ -2090,15 +2119,50 @@ async function loadCategory(category) {
         }
       }
       
-      // Fix filter text labels
-      const filterTexts = document.querySelectorAll('.filter-text');
-      filterTexts.forEach(text => {
-        text.style.color = '#374151';
-        text.style.textShadow = 'none';
-        text.style.opacity = '1';
-        text.style.visibility = 'visible';
-        text.style.fontWeight = '600';
-      });
+          // Fix filter text labels - MAXIMUM VISIBILITY
+          const filterTexts = document.querySelectorAll('.filter-text');
+          filterTexts.forEach(text => {
+            text.style.color = '#000000';
+            text.style.textShadow = 'none';
+            text.style.opacity = '1';
+            text.style.visibility = 'visible';
+            text.style.fontWeight = '900';
+            text.style.fontSize = '18px';
+            text.style.letterSpacing = '0.8px';
+            text.style.textTransform = 'uppercase';
+            text.style.fontFamily = 'Inter, Segoe UI, sans-serif';
+            text.style.lineHeight = '1.2';
+            text.style.marginBottom = '8px';
+            text.style.display = 'block';
+          });
+          
+          // Remove any error messages
+          const errorMessages = document.querySelectorAll('p');
+          errorMessages.forEach(p => {
+            if (p.textContent.includes('Error loading restaurants') || p.textContent.includes('Error')) {
+              p.style.display = 'none';
+              p.remove();
+            }
+          });
+          
+          // Hide any restaurant grid that might show errors
+          const restaurantGrid = document.getElementById('restaurantGrid');
+          if (restaurantGrid && restaurantGrid.innerHTML.includes('Error')) {
+            restaurantGrid.innerHTML = '';
+            restaurantGrid.style.display = 'none';
+          }
+          
+          // Fix search input text visibility - EXTRA DARK TEXT
+          const searchInputs = document.querySelectorAll('.search-input-visible');
+          searchInputs.forEach(input => {
+            input.style.color = '#000000';
+            input.style.fontWeight = '700';
+            input.style.textShadow = 'none';
+            input.style.opacity = '1';
+            input.style.visibility = 'visible';
+            input.style.fontSize = '16px';
+            input.style.letterSpacing = '0.3px';
+          });
     }
     
     // Apply fixes when page loads and when elements change
@@ -2358,5 +2422,113 @@ function fixFilterTextVisibility() {
   });
 }
 </script>
+
+<!-- Trending Searches Section -->
+<section class="trending-searches-section">
+  <div class="container">
+    <div class="trending-header">
+      <h2>💡 Trending Searches</h2>
+      <p>What everyone's looking for right now</p>
+    </div>
+    <div class="trending-grid">
+      <div class="trending-item" onclick="searchTrending('Biryani')">
+        <div class="trending-icon">🍛</div>
+        <div class="trending-content">
+          <h3>Biryani</h3>
+          <p>2.3k searches</p>
+        </div>
+      </div>
+      <div class="trending-item" onclick="searchTrending('Bubble Tea')">
+        <div class="trending-icon">🧋</div>
+        <div class="trending-content">
+          <h3>Bubble Tea</h3>
+          <p>1.8k searches</p>
+        </div>
+      </div>
+      <div class="trending-item" onclick="searchTrending('Sushi')">
+        <div class="trending-icon">🍣</div>
+        <div class="trending-content">
+          <h3>Sushi</h3>
+          <p>1.5k searches</p>
+        </div>
+      </div>
+      <div class="trending-item" onclick="searchTrending('Pizza')">
+        <div class="trending-icon">🍕</div>
+        <div class="trending-content">
+          <h3>Pizza</h3>
+          <p>3.1k searches</p>
+        </div>
+      </div>
+      <div class="trending-item" onclick="searchTrending('Desserts')">
+        <div class="trending-icon">🍰</div>
+        <div class="trending-content">
+          <h3>Desserts</h3>
+          <p>1.2k searches</p>
+        </div>
+      </div>
+      <div class="trending-item" onclick="searchTrending('Vegan')">
+        <div class="trending-icon">🌱</div>
+        <div class="trending-content">
+          <h3>Vegan</h3>
+          <p>980 searches</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Find Your Perfect Vibe Section -->
+<section class="perfect-vibe-section">
+  <div class="container">
+    <div class="vibe-header">
+      <h2>🎯 Find Your Perfect Vibe</h2>
+      <p>Tell us your mood and we'll find the perfect restaurant</p>
+    </div>
+    <div class="vibe-grid">
+      <div class="vibe-card" onclick="selectVibe('romantic')">
+        <div class="vibe-icon">💕</div>
+        <div class="vibe-content">
+          <h3>Romantic</h3>
+          <p>Perfect for date nights</p>
+        </div>
+      </div>
+      <div class="vibe-card" onclick="selectVibe('family')">
+        <div class="vibe-icon">👨‍👩‍👧‍👦</div>
+        <div class="vibe-content">
+          <h3>Family-Friendly</h3>
+          <p>Great for all ages</p>
+        </div>
+      </div>
+      <div class="vibe-card" onclick="selectVibe('business')">
+        <div class="vibe-icon">💼</div>
+        <div class="vibe-content">
+          <h3>Business</h3>
+          <p>Professional meetings</p>
+        </div>
+      </div>
+      <div class="vibe-card" onclick="selectVibe('casual')">
+        <div class="vibe-icon">😊</div>
+        <div class="vibe-content">
+          <h3>Casual</h3>
+          <p>Relaxed dining</p>
+        </div>
+      </div>
+      <div class="vibe-card" onclick="selectVibe('late-night')">
+        <div class="vibe-icon">🌙</div>
+        <div class="vibe-content">
+          <h3>Late Night</h3>
+          <p>Open after hours</p>
+        </div>
+      </div>
+      <div class="vibe-card" onclick="selectVibe('celebration')">
+        <div class="vibe-icon">🎉</div>
+        <div class="vibe-content">
+          <h3>Celebration</h3>
+          <p>Special occasions</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 {% endblock %}
