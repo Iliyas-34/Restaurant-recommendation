@@ -449,15 +449,19 @@ def restaurants_page():
 def restaurant_details_page(restaurant_name):
     """Individual restaurant details page"""
     try:
-        if df is None or df.empty:
+        global restaurants
+        if not restaurants or len(restaurants) == 0:
             return render_template("restaurant_details.html", error="Restaurant data not available")
         
         # Find restaurant by name
-        restaurant = df[df["Restaurant Name"] == restaurant_name]
-        if restaurant.empty:
-            return render_template("restaurant_details.html", error="Restaurant not found")
+        restaurant = None
+        for r in restaurants:
+            if r.get("Restaurant Name") == restaurant_name:
+                restaurant = r
+                break
         
-        restaurant = restaurant.iloc[0]
+        if not restaurant:
+            return render_template("restaurant_details.html", error="Restaurant not found")
         
         # Get similar restaurants
         similar_restaurants = get_similar_restaurants(restaurant_name, limit=6)
@@ -475,8 +479,8 @@ def restaurant_details_page(restaurant_name):
             "price": float(restaurant.get("Average Cost for two", 0)),
             "price_range": restaurant.get("Price_Range", "₹0"),
             "type": restaurant.get("Restaurant Type", ""),
-            "latitude": float(restaurant.get("Latitude", 0)),
-            "longitude": float(restaurant.get("Longitude", 0)),
+            "latitude": float(restaurant.get("Latitude", 0)) if restaurant.get("Latitude") else None,
+            "longitude": float(restaurant.get("Longitude", 0)) if restaurant.get("Longitude") else None,
             "online_order": restaurant.get("Online Order", "No"),
             "book_table": restaurant.get("Book Table", "No"),
             "dish_liked": restaurant.get("Dish Liked", ""),
@@ -860,20 +864,20 @@ def get_restaurants():
     if rating:
         try:
             min_rating = float(rating)
-            filtered = [r for r in filtered if float(r.get("Rating", 0) or 0) >= min_rating]
+            filtered = [r for r in filtered if float(r.get("Aggregate rating", 0) or 0) >= min_rating]
         except Exception:
             pass
 
     # Sorting (defensive numeric conversions)
     try:
         if sort == "rating":
-            filtered = sorted(filtered, key=lambda r: float(r.get("Rating", 0) or 0), reverse=True)
+            filtered = sorted(filtered, key=lambda r: float(r.get("Aggregate rating", 0) or 0), reverse=True)
         elif sort == "votes":
             filtered = sorted(filtered, key=lambda r: int(float(r.get("Votes", 0) or 0)), reverse=True)
         elif sort == "cost_low":
-            filtered = sorted(filtered, key=lambda r: int(float(r.get("Price", 0) or 0)))
+            filtered = sorted(filtered, key=lambda r: int(float(r.get("Average Cost for two", 0) or 0)))
         elif sort == "cost_high":
-            filtered = sorted(filtered, key=lambda r: int(float(r.get("Price", 0) or 0)), reverse=True)
+            filtered = sorted(filtered, key=lambda r: int(float(r.get("Average Cost for two", 0) or 0)), reverse=True)
     except Exception:
         # if conversion fails for any record, skip sort
         pass

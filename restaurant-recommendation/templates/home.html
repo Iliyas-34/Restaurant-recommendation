@@ -20,49 +20,65 @@
         <i class="fa fa-search search-icon" onclick="submitSearch()" aria-hidden="true"></i>
       </div>
       
-      <!-- Filters Beside Search Bar -->
-      <div class="filters-beside-search">
-        <div class="filter-group-inline">
-          <label for="mood-filter">😊 Mood</label>
-          <select id="mood-filter" class="filter-select-inline">
-            <option value="">Any Mood</option>
-            <option value="happy">😊 Happy</option>
-            <option value="sad">😢 Sad</option>
-            <option value="angry">😠 Angry</option>
-            <option value="relaxed">😌 Relaxed</option>
-            <option value="excited">🤩 Excited</option>
-            <option value="bored">😐 Bored</option>
-          </select>
+      <!-- Enhanced Filters Section -->
+      <div class="enhanced-filters-section">
+        <div class="filters-header">
+          <h3>🎯 Smart Filters</h3>
+          <p>Get personalized recommendations based on your preferences</p>
         </div>
         
-        <div class="filter-group-inline">
-          <label for="time-filter">🕐 Time</label>
-          <select id="time-filter" class="filter-select-inline">
-            <option value="">Any Time</option>
-            <option value="morning">🌅 Morning</option>
-            <option value="afternoon">☀️ Afternoon</option>
-            <option value="evening">🌆 Evening</option>
-            <option value="night">🌙 Night</option>
-          </select>
+        <div class="filters-grid">
+          <div class="filter-card">
+            <div class="filter-icon">😊</div>
+            <label for="mood-filter">Mood</label>
+            <select id="mood-filter" class="enhanced-filter-select">
+              <option value="">Choose your mood</option>
+              <option value="happy">😊 Happy & Energetic</option>
+              <option value="sad">😢 Need Comfort Food</option>
+              <option value="angry">😠 Spicy & Bold</option>
+              <option value="relaxed">😌 Calm & Cozy</option>
+              <option value="excited">🤩 Adventurous</option>
+              <option value="bored">😐 Something New</option>
+            </select>
+          </div>
+          
+          <div class="filter-card">
+            <div class="filter-icon">🕐</div>
+            <label for="time-filter">Time of Day</label>
+            <select id="time-filter" class="enhanced-filter-select">
+              <option value="">Select time</option>
+              <option value="morning">🌅 Morning (6AM-12PM)</option>
+              <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
+              <option value="evening">🌆 Evening (6PM-10PM)</option>
+              <option value="night">🌙 Night (10PM-6AM)</option>
+            </select>
+          </div>
+          
+          <div class="filter-card">
+            <div class="filter-icon">🎉</div>
+            <label for="occasion-filter">Occasion</label>
+            <select id="occasion-filter" class="enhanced-filter-select">
+              <option value="">Pick an occasion</option>
+              <option value="dinner">🍽️ Romantic Dinner</option>
+              <option value="lunch">🥗 Business Lunch</option>
+              <option value="date">💕 Date Night</option>
+              <option value="birthday">🎂 Birthday Celebration</option>
+              <option value="party">🎉 Party & Fun</option>
+              <option value="meeting">💼 Meeting</option>
+              <option value="anniversary">💍 Anniversary</option>
+              <option value="family">👨‍👩‍👧‍👦 Family Time</option>
+            </select>
+          </div>
         </div>
         
-        <div class="filter-group-inline">
-          <label for="occasion-filter">🎉 Occasion</label>
-          <select id="occasion-filter" class="filter-select-inline">
-            <option value="">Any Occasion</option>
-            <option value="dinner">🍽️ Dinner</option>
-            <option value="lunch">🥗 Lunch</option>
-            <option value="date">💕 Date</option>
-            <option value="birthday">🎂 Birthday</option>
-            <option value="party">🎉 Party</option>
-            <option value="meeting">💼 Meeting</option>
-            <option value="anniversary">💍 Anniversary</option>
-          </select>
+        <div class="filter-actions">
+          <button class="primary-filter-btn" onclick="applySmartFilters()">
+            <i class="fa fa-magic"></i> Find Perfect Match
+          </button>
+          <button class="secondary-filter-btn" onclick="clearAllFilters()">
+            <i class="fa fa-refresh"></i> Clear Filters
+          </button>
         </div>
-        
-        <button class="filter-btn-inline" onclick="applySmartFilters()">
-          <i class="fa fa-magic"></i> Find Perfect Match
-        </button>
       </div>
     </div>
     <div id="suggestion-box" class="suggestion-box" aria-live="polite"></div>

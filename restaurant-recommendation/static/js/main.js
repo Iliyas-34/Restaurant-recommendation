@@ -721,9 +721,9 @@ async function applySmartFilters() {
   const searchInput = document.getElementById('search-input').value.trim();
   
   // Show loading state
-  const filterBtn = document.querySelector('.filter-btn-inline');
+  const filterBtn = document.querySelector('.primary-filter-btn');
   const originalText = filterBtn.innerHTML;
-  filterBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Finding...';
+  filterBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Finding Perfect Match...';
   filterBtn.disabled = true;
   
   try {
@@ -767,6 +767,33 @@ async function applySmartFilters() {
     filterBtn.innerHTML = originalText;
     filterBtn.disabled = false;
   }
+}
+
+function clearAllFilters() {
+  // Clear all filter selects
+  document.getElementById('mood-filter').value = '';
+  document.getElementById('time-filter').value = '';
+  document.getElementById('occasion-filter').value = '';
+  document.getElementById('search-input').value = '';
+  
+  // Hide any existing results
+  const resultsContainer = document.getElementById('smart-filter-results');
+  if (resultsContainer) {
+    resultsContainer.style.display = 'none';
+  }
+  
+  // Show success message
+  const filterBtn = document.querySelector('.secondary-filter-btn');
+  const originalText = filterBtn.innerHTML;
+  filterBtn.innerHTML = '<i class="fa fa-check"></i> Cleared!';
+  filterBtn.style.background = '#10B981';
+  filterBtn.style.color = 'white';
+  
+  setTimeout(() => {
+    filterBtn.innerHTML = originalText;
+    filterBtn.style.background = '';
+    filterBtn.style.color = '';
+  }, 1500);
 }
 
 function displaySmartFilterResults(restaurants, query) {
@@ -1032,6 +1059,60 @@ document.head.insertAdjacentHTML('beforeend', smartFilterCSS);
 function goToRestaurant(restaurantName) {
   // Navigate to restaurant details page
   window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
+}
+
+// =============== Restaurant Details Functions ===============
+function toggleWishlist(restaurantName) {
+  // Use the same logic as toggleHeart but for the details page
+  const btn = document.querySelector('.btn-wishlist');
+  if (!btn) return;
+  
+  const isLiked = btn.classList.contains('liked');
+  
+  if (isLiked) {
+    // Remove from wishlist
+    fetch(`/api/wishlist/${encodeURIComponent(restaurantName)}`, { method: 'DELETE' })
+      .then(() => {
+        btn.classList.remove('liked');
+        btn.innerHTML = '<i class="fa fa-heart"></i> Add to Wishlist';
+        showNotification('Removed from wishlist', 'info');
+      })
+      .catch(() => {
+        showNotification('Failed to remove from wishlist', 'error');
+      });
+  } else {
+    // Add to wishlist
+    fetch('/api/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: restaurantName })
+    })
+      .then(() => {
+        btn.classList.add('liked');
+        btn.innerHTML = '<i class="fa fa-heart"></i> Remove from Wishlist';
+        showNotification('Added to wishlist!', 'success');
+      })
+      .catch(() => {
+        showNotification('Failed to add to wishlist', 'error');
+      });
+  }
+}
+
+function shareRestaurant() {
+  if (navigator.share) {
+    navigator.share({
+      title: document.querySelector('.restaurant-name')?.textContent || 'Restaurant',
+      text: 'Check out this restaurant!',
+      url: window.location.href
+    });
+  } else {
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      showNotification('Link copied to clipboard!', 'success');
+    }).catch(() => {
+      showNotification('Failed to copy link', 'error');
+    });
+  }
 }
 
 // =============== Wishlist Functions ===============
