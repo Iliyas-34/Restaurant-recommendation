@@ -138,15 +138,15 @@ function loadRestaurants(page = 1) {
         const image = getRestaurantImage(r);
         const html = `
           <div class="card" style="position:relative;">
-            <span class="wishlist-icon" data-liked="false" onclick="toggleHeart(this, '${escapeJsString(r["Restaurant Name"] || "")}')">❤️</span>
-            <img src="${image}" alt="${escapeHtml(r["Restaurant Name"] || "Restaurant image")}" loading="lazy" onerror="this.onerror=null;this.src='/static/images/restaurant-default.jpg';">
+            <span class="wishlist-icon" data-liked="false" onclick="toggleHeart(this, '${escapeJsString(r.name || "")}')">❤️</span>
+            <img src="${image}" alt="${escapeHtml(r.name || "Restaurant image")}" loading="lazy" onerror="this.onerror=null;this.src='/static/images/restaurant-default.jpg';">
             <div class="card-content">
-              <h3>${escapeHtml(r["Restaurant Name"] || "")}</h3>
-              <p><b>City:</b> ${escapeHtml(r.City || "")}</p>
-              <p><b>Cuisine:</b> ${escapeHtml(r.Cuisines || "")}</p>
-              <p><b>Rating:</b> ⭐ ${escapeHtml(r["Aggregate rating"] || "")} ${escapeHtml(r["Rating text"] || "")}</p>
-              <p><b>Cost for two:</b> ${escapeHtml(String(r["Average Cost for two"] || ""))} ${escapeHtml(r.Currency || "")}</p>
-              <p><b>Votes:</b> ${escapeHtml(String(r.Votes || ""))}</p>
+              <h3>${escapeHtml(r.name || "")}</h3>
+              <p><b>City:</b> ${escapeHtml(r.city || "")}</p>
+              <p><b>Cuisine:</b> ${escapeHtml(r.cuisines || "")}</p>
+              <p><b>Rating:</b> ⭐ ${escapeHtml(r.rating || "")}</p>
+              <p><b>Cost for two:</b> ₹${escapeHtml(String(r.price || ""))}</p>
+              <p><b>Votes:</b> ${escapeHtml(String(r.votes || ""))}</p>
             </div>
           </div>`;
         if (list) list.insertAdjacentHTML("beforeend", html);

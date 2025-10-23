@@ -887,8 +887,29 @@ def get_restaurants():
     end = start + per_page
     paginated = filtered[start:end]
 
+    # Format results for frontend
+    formatted_restaurants = []
+    for restaurant in paginated:
+        formatted_restaurants.append({
+            "id": restaurant.get("Restaurant Name", ""),
+            "name": restaurant.get("Restaurant Name", ""),
+            "cuisines": restaurant.get("Cuisines", ""),
+            "city": restaurant.get("City", ""),
+            "location": restaurant.get("Location", ""),
+            "address": restaurant.get("Address", ""),
+            "rating": float(restaurant.get("Aggregate rating", 0)),
+            "votes": int(restaurant.get("Votes", 0)),
+            "price": float(restaurant.get("Average Cost for two", 0)),
+            "price_range": f"₹{restaurant.get('Average Cost for two', 0)}",
+            "type": restaurant.get("Restaurant Type", ""),
+            "latitude": float(restaurant.get("Latitude", 0)) if restaurant.get("Latitude") else None,
+            "longitude": float(restaurant.get("Longitude", 0)) if restaurant.get("Longitude") else None,
+            "online_order": restaurant.get("Online Order", "No"),
+            "book_table": restaurant.get("Book Table", "No")
+        })
+
     return jsonify({
-        "restaurants": paginated,
+        "restaurants": formatted_restaurants,
         "total": total,
         "page": page,
         "per_page": per_page
@@ -1967,21 +1988,21 @@ def search_restaurants():
         restaurants = []
         for _, restaurant in page_results.iterrows():
             restaurants.append({
-                "id": restaurant.get("Restaurant_Name", ""),
-                "name": restaurant.get("Restaurant_Name", ""),
+                "id": restaurant.get("Restaurant Name", ""),
+                "name": restaurant.get("Restaurant Name", ""),
                 "cuisines": restaurant.get("Cuisines", ""),
                 "city": restaurant.get("City", ""),
                 "location": restaurant.get("Location", ""),
                 "address": restaurant.get("Address", ""),
-                "rating": float(restaurant.get("Rating", 0)),
+                "rating": float(restaurant.get("Aggregate rating", 0)),
                 "votes": int(restaurant.get("Votes", 0)),
-                "price": float(restaurant.get("Price", 0)),
-                "price_range": restaurant.get("Price_Range", "₹0"),
-                "type": restaurant.get("Restaurant_Type", ""),
+                "price": float(restaurant.get("Average Cost for two", 0)),
+                "price_range": f"₹{restaurant.get('Average Cost for two', 0)}",
+                "type": restaurant.get("Restaurant Type", ""),
                 "latitude": float(restaurant.get("Latitude", 0)) if pd.notna(restaurant.get("Latitude")) else None,
                 "longitude": float(restaurant.get("Longitude", 0)) if pd.notna(restaurant.get("Longitude")) else None,
-                "online_order": restaurant.get("Online_Order", "No"),
-                "book_table": restaurant.get("Book_Table", "No")
+                "online_order": restaurant.get("Online Order", "No"),
+                "book_table": restaurant.get("Book Table", "No")
             })
         
         return jsonify({
