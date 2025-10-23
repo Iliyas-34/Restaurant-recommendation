@@ -2232,52 +2232,74 @@ def debug_endpoint():
 def get_featured_restaurants():
     """Get featured restaurants based on rating, popularity, and recency"""
     try:
-        if df is None or df.empty:
+        global restaurants
+        if not restaurants or len(restaurants) == 0:
             return jsonify({"restaurants": [], "total": 0})
         
+        # Convert to DataFrame for easier processing
+        df_featured = pd.DataFrame(restaurants)
+        
         # Featured selection logic: high rating + high votes + recent
-        featured = df.copy()
+        featured = df_featured.copy()
+        
+        # Filter for high-quality restaurants using correct column names
+        # Convert to numeric and handle any missing values
+        featured["Aggregate rating"] = pd.to_numeric(featured["Aggregate rating"], errors='coerce').fillna(0)
+        featured["Votes"] = pd.to_numeric(featured["Votes"], errors='coerce').fillna(0)
+        featured["Average Cost for two"] = pd.to_numeric(featured["Average Cost for two"], errors='coerce').fillna(0)
         
         # Filter for high-quality restaurants
-        featured = featured[featured["Rating"] >= 4.0]
+        featured = featured[featured["Aggregate rating"] >= 4.0]
         featured = featured[featured["Votes"] >= 100]
+        
+        # If no restaurants meet strict criteria, relax the requirements
+        if len(featured) < 5:
+            print("Relaxing featured restaurant criteria...")
+            featured = df_featured.copy()
+            featured["Aggregate rating"] = pd.to_numeric(featured["Aggregate rating"], errors='coerce').fillna(0)
+            featured["Votes"] = pd.to_numeric(featured["Votes"], errors='coerce').fillna(0)
+            featured["Average Cost for two"] = pd.to_numeric(featured["Average Cost for two"], errors='coerce').fillna(0)
+            
+            # More relaxed criteria
+            featured = featured[featured["Aggregate rating"] >= 3.5]
+            featured = featured[featured["Votes"] >= 50]
         
         # Calculate featured score (weighted combination)
         featured["featured_score"] = (
-            featured["Rating"] * 0.4 +
+            featured["Aggregate rating"] * 0.4 +
             (featured["Votes"] / featured["Votes"].max()) * 0.3 +
-            (1 - featured["Price"] / featured["Price"].max()) * 0.3  # Lower price = higher score
+            (1 - featured["Average Cost for two"] / featured["Average Cost for two"].max()) * 0.3  # Lower price = higher score
         )
         
         # Sort by featured score and take top 12
         featured = featured.sort_values("featured_score", ascending=False).head(12)
         
         # Format results
-        restaurants = []
+        restaurants_list = []
         for _, restaurant in featured.iterrows():
-            restaurants.append({
-                "id": restaurant.get("Restaurant_Name", ""),
-                "name": restaurant.get("Restaurant_Name", ""),
+            restaurants_list.append({
+                "id": restaurant.get("Restaurant Name", ""),
+                "name": restaurant.get("Restaurant Name", ""),
                 "cuisines": restaurant.get("Cuisines", ""),
                 "city": restaurant.get("City", ""),
                 "location": restaurant.get("Location", ""),
                 "address": restaurant.get("Address", ""),
-                "rating": float(restaurant.get("Rating", 0)),
+                "rating": float(restaurant.get("Aggregate rating", 0)),
                 "votes": int(restaurant.get("Votes", 0)),
-                "price": float(restaurant.get("Price", 0)),
-                "price_range": restaurant.get("Price_Range", "₹0"),
-                "type": restaurant.get("Restaurant_Type", ""),
+                "price": float(restaurant.get("Average Cost for two", 0)),
+                "price_range": f"₹{int(restaurant.get('Average Cost for two', 0))}",
+                "type": restaurant.get("Restaurant Type", ""),
                 "latitude": float(restaurant.get("Latitude", 0)) if pd.notna(restaurant.get("Latitude")) else None,
                 "longitude": float(restaurant.get("Longitude", 0)) if pd.notna(restaurant.get("Longitude")) else None,
-                "online_order": restaurant.get("Online_Order", "No"),
-                "book_table": restaurant.get("Book_Table", "No"),
-                "dish_liked": restaurant.get("Dish_Liked", ""),
+                "online_order": restaurant.get("Online Order", "No"),
+                "book_table": restaurant.get("Book Table", "No"),
+                "dish_liked": restaurant.get("Dish Liked", ""),
                 "featured_score": float(restaurant.get("featured_score", 0))
             })
         
         return jsonify({
-            "restaurants": restaurants,
-            "total": len(restaurants),
+            "restaurants": restaurants_list,
+            "total": len(restaurants_list),
             "selection_criteria": "High rating (4.0+), high votes (100+), balanced price-quality ratio"
         })
         
