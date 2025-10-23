@@ -834,6 +834,9 @@ def get_restaurants():
     if restaurants and len(restaurants) > 0:
         print(f"Debug: First restaurant keys: {list(restaurants[0].keys()) if restaurants[0] else 'Empty'}")
         print(f"Debug: First restaurant name: '{restaurants[0].get('Restaurant Name', 'MISSING')}'")
+        print(f"Debug: First restaurant data sample: {dict(list(restaurants[0].items())[:3])}")
+    else:
+        print("Debug: restaurants is empty or None!")
     
     search = request.args.get("search", "").strip().lower()
     cities_raw = request.args.get("city", "").strip()
@@ -2009,9 +2012,9 @@ def search_restaurants():
         page_results = results.iloc[start_idx:end_idx]
         
         # Format results
-        restaurants = []
+        formatted_restaurants = []
         for _, restaurant in page_results.iterrows():
-            restaurants.append({
+            formatted_restaurants.append({
                 "id": restaurant.get("Restaurant Name", ""),
                 "name": restaurant.get("Restaurant Name", ""),
                 "cuisines": restaurant.get("Cuisines", ""),
@@ -2030,7 +2033,7 @@ def search_restaurants():
             })
         
         return jsonify({
-            "restaurants": restaurants,
+            "restaurants": formatted_restaurants,
             "total": total,
             "page": page,
             "per_page": per_page,
@@ -2187,7 +2190,7 @@ def get_nearby_restaurants():
             results = results[results["City"].str.contains(city, case=False, na=False)]
         
         # Format results
-        restaurants = []
+        formatted_restaurants = []
         for _, restaurant in results.iterrows():
             distance_text = ""
             if latitude != 0 and longitude != 0 and "distance_km" in restaurant:
@@ -2197,7 +2200,7 @@ def get_nearby_restaurants():
                 else:
                     distance_text = f"{distance:.1f}km"
             
-            restaurants.append({
+            formatted_restaurants.append({
                 "id": restaurant.get("Restaurant_Name", ""),
                 "name": restaurant.get("Restaurant_Name", ""),
                 "cuisines": restaurant.get("Cuisines", ""),
@@ -2216,8 +2219,8 @@ def get_nearby_restaurants():
             })
         
         return jsonify({
-            "restaurants": restaurants,
-            "total": len(restaurants),
+            "restaurants": formatted_restaurants,
+            "total": len(formatted_restaurants),
             "location": {
                 "latitude": latitude,
                 "longitude": longitude,
