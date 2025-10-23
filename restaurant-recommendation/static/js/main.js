@@ -718,27 +718,33 @@ async function applySmartFilters() {
   const mood = document.getElementById('mood-filter').value;
   const time = document.getElementById('time-filter').value;
   const occasion = document.getElementById('occasion-filter').value;
-  const searchInput = document.getElementById('search-input').value.trim();
+  
+  console.log('Applying smart filters:', { mood, time, occasion });
   
   // Show loading state
-  const filterBtn = document.querySelector('.primary-filter-btn');
-  const originalText = filterBtn.innerHTML;
-  filterBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Finding Perfect Match...';
-  filterBtn.disabled = true;
+  const filterBtn = document.querySelector('.filter-primary-btn');
+  if (filterBtn) {
+    const originalText = filterBtn.querySelector('.btn-text').textContent;
+    const originalIcon = filterBtn.querySelector('.btn-icon').textContent;
+    
+    filterBtn.querySelector('.btn-text').textContent = 'Finding...';
+    filterBtn.querySelector('.btn-icon').textContent = '⏳';
+    filterBtn.style.pointerEvents = 'none';
+  }
   
   try {
-    // Use the new search API with filters
-    const searchParams = new URLSearchParams({
-      q: searchInput || "restaurant",
-      mood: mood,
-      time: time,
-      occasion: occasion,
-      per_page: 20
+    // Use the smart-filters API endpoint
+    const response = await fetch('/api/smart-filters', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mood: mood,
+        time: time,
+        occasion: occasion
+      })
     });
-    
-    console.log('Applying smart filters:', { mood, time, occasion, searchInput });
-    
-    const response = await fetch(`/api/search?${searchParams}`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -751,9 +757,8 @@ async function applySmartFilters() {
       throw new Error(data.error);
     }
     
-    // Display the results
-    displaySmartFilterResults(data.restaurants, {
-      user_input: searchInput,
+    // Display the results using the smart-filter-results container
+    displaySmartFilterResults(data.recommendations || [], {
       mood: mood,
       time: time,
       occasion: occasion
@@ -763,9 +768,14 @@ async function applySmartFilters() {
     console.error('Error applying smart filters:', error);
     displayError(`Failed to load restaurant recommendations. Please check your connection and try again.`);
   } finally {
-    // Restore button state
-    filterBtn.innerHTML = originalText;
-    filterBtn.disabled = false;
+    // Reset button state
+    if (filterBtn) {
+      setTimeout(() => {
+        filterBtn.querySelector('.btn-text').textContent = 'Find Perfect Match';
+        filterBtn.querySelector('.btn-icon').textContent = '✨';
+        filterBtn.style.pointerEvents = 'auto';
+      }, 1000);
+    }
   }
 }
 
@@ -818,12 +828,14 @@ function displaySmartFilterResults(restaurants, query) {
   }
   
   // Build results HTML
-  const queryText = `for ${query.user_input || 'restaurants'} (${query.mood || 'any'} mood, ${query.time || 'any time'}, ${query.occasion || 'any occasion'})`;
+  const moodText = query.mood ? `${query.mood} mood` : 'any mood';
+  const timeText = query.time ? `${query.time} time` : 'any time';
+  const occasionText = query.occasion ? `${query.occasion} occasion` : 'any occasion';
   
   resultsContainer.innerHTML = `
     <div class="results-header">
-      <h3>🎯 Perfect Matches ${queryText}</h3>
-      <p>Based on your preferences and mood</p>
+      <h3>🎯 Perfect Matches Found</h3>
+      <p>${restaurants.length} restaurants match your preferences (${moodText}, ${timeText}, ${occasionText})</p>
     </div>
     <div class="results-grid">
       ${restaurants.map(restaurant => `
@@ -831,6 +843,7 @@ function displaySmartFilterResults(restaurants, query) {
           <div class="result-image">
             <img src="${getCuisineImage(restaurant.cuisines)}" alt="${restaurant.name}" onerror="this.src='/static/images/restaurant-default.jpg'">
             <div class="rating-badge">⭐ ${restaurant.rating.toFixed(1)}</div>
+            <div class="match-badge">${Math.round(restaurant.match_score * 100)}% match</div>
           </div>
           <div class="result-info">
             <h4>${restaurant.name}</h4>
@@ -838,7 +851,7 @@ function displaySmartFilterResults(restaurants, query) {
             <p class="location">📍 ${restaurant.address || restaurant.location}</p>
             <div class="result-meta">
               <span class="rating">⭐ ${restaurant.rating.toFixed(1)}/5</span>
-              <span class="price">💰 ${restaurant.price_range}</span>
+              <span class="price">💰 ₹${restaurant.cost} for two</span>
             </div>
             <div class="result-actions">
               <button class="view-btn" onclick="event.stopPropagation(); goToRestaurant('${restaurant.name}')">View Details</button>
@@ -1004,6 +1017,18 @@ const smartFilterCSS = `
           top: 10px;
           right: 10px;
           background: #D9822B;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: bold;
+        }
+
+        .match-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: linear-gradient(135deg, #10B981, #059669);
           color: white;
           padding: 4px 8px;
           border-radius: 12px;

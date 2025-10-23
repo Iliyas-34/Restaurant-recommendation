@@ -1774,41 +1774,7 @@ async function loadCategory(category) {
   }
 }
 
-    // Debug function to test the API directly
-    function testSmartFiltersAPI() {
-      console.log('Testing Smart Filters API...');
-      fetch('/api/smart-filters', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mood: 'happy',
-          time: 'night', 
-          occasion: 'birthday'
-        })
-      })
-      .then(response => {
-        console.log('Test response status:', response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('Test data received:', data);
-        console.log('Test recommendations count:', data.recommendations ? data.recommendations.length : 0);
-        if (data.recommendations && data.recommendations.length > 0) {
-          console.log('Test successful! Showing results...');
-          showFilterResults(data.recommendations);
-        } else {
-          console.log('Test failed - no recommendations');
-        }
-      })
-      .catch(error => {
-        console.error('Test failed with error:', error);
-      });
-    }
-
-    // Smart Filters Functions
-    function applySmartFilters() {
+    // Smart Filters Functions - Using main.js implementation
       const mood = document.getElementById('mood-filter').value;
       const time = document.getElementById('time-filter').value;
       const occasion = document.getElementById('occasion-filter').value;
