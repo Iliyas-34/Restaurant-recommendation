@@ -827,6 +827,7 @@ def get_restaurants():
       - sort (rating|votes|cost_low|cost_high)
       - page (pagination, 1-based)
     """
+    global restaurants
     search = request.args.get("search", "").strip().lower()
     cities_raw = request.args.get("city", "").strip()
     cuisines_raw = request.args.get("cuisine", "").strip()
@@ -838,6 +839,22 @@ def get_restaurants():
     # parse multi-values: allow both single value and comma-separated lists
     city_list = [c.strip() for c in cities_raw.split(",") if c.strip()] if cities_raw else []
     cuisine_list = [c.strip().lower() for c in cuisines_raw.split(",") if c.strip()] if cuisines_raw else []
+
+    # Ensure we have valid restaurants data
+    if not restaurants or len(restaurants) == 0:
+        print("Debug: No restaurants data available, reloading...")
+        try:
+            json_path = os.path.join("data", "restaurants.json")
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    restaurants = json.load(f)
+                print(f"Debug: Reloaded {len(restaurants)} restaurants")
+            else:
+                print("Debug: restaurants.json not found!")
+                return jsonify({"restaurants": [], "total": 0, "page": page, "per_page": per_page})
+        except Exception as e:
+            print(f"Debug: Error reloading restaurants: {e}")
+            return jsonify({"restaurants": [], "total": 0, "page": page, "per_page": per_page})
 
     filtered = restaurants
 
