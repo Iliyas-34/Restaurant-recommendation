@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+{% block title %}{{ restaurant.name if restaurant else 'Restaurant Details' }} | Restaurant Finder{% endblock %}
+{% block content %}
+
+{% if error %}
+<section class="error-section">
+  <div class="error-container">
+    <h1>❌ Restaurant Not Found</h1>
+    <p>{{ error }}</p>
+    <a href="{{ url_for('restaurants_page') }}" class="btn-primary">← Back to Restaurants</a>
+  </div>
+</section>
+{% else %}
+<section class="restaurant-details">
+  <!-- Restaurant Header -->
+  <div class="restaurant-header">
+    <div class="restaurant-info">
+      <h1 class="restaurant-name">{{ restaurant.name }}</h1>
+      <div class="restaurant-meta">
+        <div class="rating-section">
+          <span class="rating">{{ "%.1f"|format(restaurant.rating) }}</span>
+          <div class="stars">
+            {% for i in range(5) %}
+              {% if i < restaurant.rating %}
+                <span class="star filled">★</span>
+              {% else %}
+                <span class="star">☆</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <span class="votes">({{ restaurant.votes }} votes)</span>
+        </div>
+        <div class="price-section">
+          <span class="price-label">Average Cost for Two:</span>
+          <span class="price">₹{{ restaurant.price }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="restaurant-actions">
+      <button class="btn-wishlist" onclick="toggleWishlist('{{ restaurant.name }}')">
+        <i class="fa fa-heart"></i> Add to Wishlist
+      </button>
+      <button class="btn-share" onclick="shareRestaurant()">
+        <i class="fa fa-share"></i> Share
+      </button>
+    </div>
+  </div>
+
+  <!-- Restaurant Details Grid -->
+  <div class="details-grid">
+    <!-- Main Info -->
+    <div class="info-card">
+      <h3>🍽️ Cuisines</h3>
+      <div class="cuisines">
+        {% for cuisine in restaurant.cuisines.split(',') %}
+          <span class="cuisine-tag">{{ cuisine.strip() }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>📍 Location</h3>
+      <p class="location">{{ restaurant.address }}</p>
+      <p class="city">{{ restaurant.location }}</p>
+      {% if restaurant.latitude and restaurant.longitude %}
+        <button class="btn-map" onclick="openMap({{ restaurant.latitude }}, {{ restaurant.longitude }})">
+          <i class="fa fa-map-marker"></i> View on Map
+        </button>
+      {% endif %}
+    </div>
+
+    <div class="info-card">
+      <h3>💰 Price Range</h3>
+      <div class="price-indicator">
+        {% set price_level = (restaurant.price / 500) | round | int %}
+        {% for i in range(4) %}
+          <span class="price-dot {% if i < price_level %}filled{% endif %}"></span>
+        {% endfor %}
+        <span class="price-text">₹{{ restaurant.price }} for two</span>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>⭐ Rating Details</h3>
+      <div class="rating-breakdown">
+        <div class="rating-item">
+          <span>Overall Rating:</span>
+          <span class="rating-value">{{ "%.1f"|format(restaurant.rating) }}/5</span>
+        </div>
+        <div class="rating-item">
+          <span>Total Votes:</span>
+          <span class="rating-value">{{ restaurant.votes }}</span>
+        </div>
+        {% if restaurant.price_range %}
+        <div class="rating-item">
+          <span>Price Range:</span>
+          <span class="rating-value">{{ restaurant.price_range }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  {% if restaurant.reviews %}
+  <div class="reviews-section">
+    <h3>💬 Reviews</h3>
+    <div class="reviews-list">
+      {% for review in restaurant.reviews[:5] %}
+      <div class="review-item">
+        <div class="review-header">
+          <span class="reviewer">{{ review.reviewer if review.reviewer else 'Anonymous' }}</span>
+          <span class="review-rating">{{ "%.1f"|format(review.rating) }}/5</span>
+        </div>
+        <p class="review-text">{{ review.text }}</p>
+        <span class="review-date">{{ review.date if review.date else 'Recent' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Similar Restaurants -->
+  {% if similar_restaurants %}
+  <div class="similar-section">
+    <h3>🍴 Similar Restaurants</h3>
+    <div class="similar-grid">
+      {% for similar in similar_restaurants[:6] %}
+      <div class="similar-card" onclick="goToRestaurant('{{ similar.name }}')">
+        <h4>{{ similar.name }}</h4>
+        <p class="similar-cuisines">{{ similar.cuisines }}</p>
+        <div class="similar-rating">
+          <span class="rating">{{ "%.1f"|format(similar.rating) }}</span>
+          <span class="votes">({{ similar.votes }} votes)</span>
+        </div>
+        <p class="similar-price">₹{{ similar.price }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Back Button -->
+  <div class="back-section">
+    <a href="{{ url_for('restaurants_page') }}" class="btn-back">
+      <i class="fa fa-arrow-left"></i> Back to All Restaurants
+    </a>
+  </div>
+</section>
+{% endif %}
+
+<style>
+.restaurant-details {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.restaurant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.restaurant-name {
+  font-size: 2.5rem;
+  color: #FF4F00;
+  margin: 0 0 15px 0;
+  font-weight: 700;
+}
+
+.restaurant-meta {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #FF4F00;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 1.2rem;
+}
+
+.star.filled {
+  color: #FFD700;
+}
+
+.votes {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.price-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.price-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2d5016;
+}
+
+.restaurant-actions {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.btn-wishlist, .btn-share {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-wishlist {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-wishlist:hover {
+  background: #ff5252;
+}
+
+.btn-share {
+  background: #4ecdc4;
+  color: white;
+}
+
+.btn-share:hover {
+  background: #45b7b8;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid #FF4F00;
+}
+
+.info-card h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.cuisines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cuisine-tag {
+  background: #FF4F00;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.location {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.city {
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.btn-map {
+  background: #4ecdc4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-map:hover {
+  background: #45b7b8;
+}
+
+.price-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.price-dot.filled {
+  background: #FF4F00;
+}
+
+.price-text {
+  font-weight: 600;
+  color: #333;
+}
+
+.rating-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rating-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rating-value {
+  font-weight: bold;
+  color: #FF4F00;
+}
+
+.reviews-section {
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.reviews-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.review-item {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 3px solid #FF4F00;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.reviewer {
+  font-weight: 600;
+  color: #333;
+}
+
+.review-rating {
+  color: #FF4F00;
+  font-weight: bold;
+}
+
+.review-text {
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.review-date {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.similar-section {
+  margin: 30px 0;
+}
+
+.similar-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.similar-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.similar-card:hover {
+  border-color: #FF4F00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.similar-card h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.similar-cuisines {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 8px 0;
+}
+
+.similar-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.similar-price {
+  color: #2d5016;
+  font-weight: 600;
+  margin: 0;
+}
+
+.back-section {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FF4F00;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: #e63e00;
+  transform: translateY(-2px);
+}
+
+.error-section {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.error-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.error-container h1 {
+  color: #ff6b6b;
+  margin-bottom: 20px;
+}
+
+.error-container p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.btn-primary {
+  background: #FF4F00;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #e63e00;
+}
+
+@media (max-width: 768px) {
+  .restaurant-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .restaurant-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .restaurant-meta {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+function toggleWishlist(restaurantName) {
+  // Add wishlist functionality
+  console.log('Toggle wishlist for:', restaurantName);
+  // Implementation would go here
+}
+
+function shareRestaurant() {
+  if (navigator.share) {
+    navigator.share({
+      title: '{{ restaurant.name if restaurant else "Restaurant" }}',
+      text: 'Check out this restaurant!',
+      url: window.location.href
+    });
+  } else {
+    // Fallback to copying URL
+    navigator.clipboard.writeText(window.location.href);
+    alert('Restaurant URL copied to clipboard!');
+  }
+}
+
+function openMap(lat, lng) {
+  const url = `https://www.google.com/maps?q=${lat},${lng}`;
+  window.open(url, '_blank');
+}
+
+function goToRestaurant(restaurantName) {
+  window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
+}
+</script>
+
+{% endblock %}

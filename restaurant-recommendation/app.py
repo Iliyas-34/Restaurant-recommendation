@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session, flash
+from flask_caching import Cache
 import os
 import threading
 import json
@@ -22,8 +23,22 @@ import csv
 import os
 from collections import defaultdict, Counter
 
+# Import ML recommendation engine
+try:
+    from utils.ml_recommendation_engine import recommendation_engine, get_recommendations, initialize_recommendation_engine
+    ML_ENGINE_AVAILABLE = True
+except ImportError as e:
+    print(f"ML recommendation engine not available: {e}")
+    ML_ENGINE_AVAILABLE = False
+
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"  # change to a secure random key in production
+
+# Configure Flask-Caching
+cache = Cache(app, config={
+    'CACHE_TYPE': 'simple',
+    'CACHE_DEFAULT_TIMEOUT': 300  # 5 minutes
+})
 # ---------- OAuth Blueprints ----------
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID") or ""
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET") or ""
@@ -145,47 +160,127 @@ def load_pricing_data():
 
 
 # ---------- Load restaurants dataset ----------
-restaurants = load_json(DATA_PATH, [])
+# Primary dataset: Use Zomato data converted to JSON format
+restaurants = []
+
+try:
+    # Load the converted JSON data (originally from zomato_cleaned.csv)
+    json_path = os.path.join("data", "restaurants.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            restaurants = json.load(f)
+        print(f"Loaded {len(restaurants)} restaurants from converted Zomato JSON dataset")
+        print(f"Sample columns: {list(restaurants[0].keys()) if restaurants else 'No data'}")
+    else:
+        print("Converted Zomato JSON dataset not found!")
+        restaurants = []
+        
+except Exception as e:
+    print(f"Error loading converted Zomato JSON dataset: {e}")
+    restaurants = []
 
 # Defensive: ensure restaurants is a list of dicts
 if not isinstance(restaurants, list):
     restaurants = []
 
-# Load CSV dataset for ML training (chatbot only)
-csv_restaurants = []
-try:
-    csv_path = os.path.join("dataset", "restaurants.csv")
-    if os.path.exists(csv_path):
-        df_csv = pd.read_csv(csv_path)
-        csv_restaurants = df_csv.to_dict(orient='records')
-        print(f"Loaded {len(csv_restaurants)} items from CSV dataset for ML training")
-    else:
-        print("CSV dataset not found, using JSON data only")
-except Exception as e:
-    print(f"Error loading CSV dataset: {e}")
-    csv_restaurants = []
+print(f"Final dataset: {len(restaurants)} restaurants loaded")
 
-# Keep JSON dataset for restaurant page (full restaurant data)
-# CSV dataset is only used for chatbot training
-print(f"Using JSON dataset with {len(restaurants)} restaurants for restaurant page")
-print(f"Using CSV dataset with {len(csv_restaurants)} items for ML training")
+# ---------- ML Recommendations setup using cleaned dataset ----------
+def initialize_ml_data():
+    """Initialize ML data and return the DataFrame"""
+    global df, cosine_sim, tfidf, restaurants
+    
+    try:
+        # Reload restaurants data if empty
+        if not restaurants or len(restaurants) == 0:
+            print("Reloading restaurants data...")
+            try:
+                # Load the processed data (preferably) or converted JSON data
+                # Try multiple possible paths
+                possible_paths = [
+                    os.path.join("data", "restaurants_processed.json"),
+                    os.path.join("data", "restaurants.json"),
+                    os.path.join("restaurant-recommendation", "data", "restaurants_processed.json"),
+                    os.path.join("restaurant-recommendation", "data", "restaurants.json"),
+                    os.path.join("..", "restaurant-recommendation", "data", "restaurants_processed.json")
+                ]
+                
+                json_path = None
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        json_path = path
+                        break
+                
+                if json_path:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        restaurants = json.load(f)
+                    print(f"Reloaded {len(restaurants)} restaurants from {json_path}")
+                else:
+                    print("Converted Zomato JSON dataset not found in any of the expected locations!")
+                    print(f"Tried paths: {possible_paths}")
+                    restaurants = []
+            except Exception as e:
+                print(f"Error reloading restaurants data: {e}")
+                restaurants = []
+        
+        # Use the main restaurants dataset for ML
+        df = pd.DataFrame(restaurants)
+        print(f"Using main dataset with {len(df)} restaurants for ML")
+        
+        # Ensure required columns exist (using converted JSON column names)
+        if "Cuisines" not in df.columns:
+            df["Cuisines"] = ""
+        df["Cuisines"] = df["Cuisines"].fillna("")
+        
+        if "City" not in df.columns:
+            df["City"] = ""
+        df["City"] = df["City"].fillna("")
+        
+        # Add missing columns with defaults
+        if "Address" not in df.columns:
+            df["Address"] = df["City"].astype(str) + ", " + df["Location"].astype(str)
+        if "Latitude" not in df.columns:
+            df["Latitude"] = 0.0
+        if "Longitude" not in df.columns:
+            df["Longitude"] = 0.0
+        if "Price_Range" not in df.columns:
+            df["Price_Range"] = df["Average Cost for two"].apply(lambda x: "₹" + str(x) if pd.notna(x) else "₹0")
+        
+        # Create combined features for better similarity (using converted JSON column names)
+        df["Combined_Features"] = (
+            df["Cuisines"].astype(str) + " " + 
+            df["City"].astype(str) + " " + 
+            df["Restaurant Name"].astype(str) + " " +
+            df["Restaurant Type"].astype(str) + " " +
+            df["Address"].astype(str)
+        )
+        
+        tfidf = TfidfVectorizer(stop_words="english", max_features=5000, ngram_range=(1, 3))
+        tfidf_matrix = tfidf.fit_transform(df["Combined_Features"])
+        cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+        print(f"ML similarity matrix created: {cosine_sim.shape}")
+        
+        return df
+        
+    except Exception as e:
+        print(f"Error setting up ML recommendations: {e}")
+        # If something goes wrong with pandas or ML setup, provide safe defaults
+        df = pd.DataFrame(columns=["Restaurant_Name", "City", "Cuisines", "Rating", "Votes"])
+        cosine_sim = None
+        return df
 
-# ---------- ML Recommendations setup (if dataset large, consider lazy init) ----------
-try:
-    df = pd.DataFrame(restaurants)
-    if "Cuisines" not in df.columns:
-        df["Cuisines"] = ""
-    df["Cuisines"] = df["Cuisines"].fillna("")
-    if "City" not in df.columns:
-        df["City"] = ""
-    tfidf = TfidfVectorizer(stop_words="english")
-    # combine cuisines + city for basic similarity
-    tfidf_matrix = tfidf.fit_transform(df["Cuisines"].astype(str) + " " + df["City"].astype(str))
-    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-except Exception:
-    # If something goes wrong with pandas or ML setup, provide safe defaults
-    df = pd.DataFrame(columns=["Restaurant Name", "City", "Cuisines", "Aggregate rating", "Votes"])
-    cosine_sim = None
+# Initialize ML data
+df = initialize_ml_data()
+
+# Ensure data is loaded when Flask app starts
+def load_data():
+    global df, restaurants
+    if not restaurants or len(restaurants) == 0:
+        print("Loading data on first request...")
+        df = initialize_ml_data()
+
+# Load data immediately
+load_data()
 # ---------- Simple Predictive Typing Model (optional) ----------
 try:
     # Prefer explicit dataset if present: dataset/restaurants.csv with column 'name'
@@ -209,9 +304,9 @@ try:
         print(f"Error loading CSV dataset: {e}")
         pass
 
-    # Fallback: derive from restaurants dataset (Restaurant Name)
-    if not _suggest_texts_for_fit and "Restaurant Name" in df.columns:
-        names_list = df["Restaurant Name"].fillna("").astype(str).unique().tolist()
+    # Fallback: derive from restaurants dataset (Restaurant_Name)
+    if not _suggest_texts_for_fit and "Restaurant_Name" in df.columns:
+        names_list = df["Restaurant_Name"].fillna("").astype(str).unique().tolist()
         _suggest_texts_for_fit = [n for n in names_list if n]
         _suggest_labels = [n for n in names_list if n]
         print(f"Using fallback dataset with {len(_suggest_texts_for_fit)} restaurant names")
@@ -229,21 +324,57 @@ def recommend_restaurants(name, n=5):
     Return up to `n` similar restaurants to `name`.
     If name not found or ML unavailable, return empty list.
     """
-    if cosine_sim is None:
+    if cosine_sim is None or df is None:
         return []
-    if name not in df["Restaurant Name"].values:
-        return []
+    
     try:
-        idx = int(df[df["Restaurant Name"] == name].index[0])
-    except Exception:
+        # If name is a search term (not exact restaurant name), find best matches
+        if name not in df["Restaurant Name"].values:
+            # Use TF-IDF to find similar restaurants based on search term
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.metrics.pairwise import cosine_similarity
+            
+            # Create search vector
+            search_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000, ngram_range=(1, 3))
+            search_matrix = search_vectorizer.fit_transform(df["Combined_Features"])
+            search_query = search_vectorizer.transform([name])
+            
+            # Calculate similarity
+            search_similarity = cosine_similarity(search_query, search_matrix)
+            sim_scores = list(enumerate(search_similarity[0]))
+            sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+            sim_scores = sim_scores[:n]  # Get top n matches
+            restaurant_indices = [i[0] for i in sim_scores if i[1] > 0.1]  # Only include meaningful matches
+        else:
+            # Exact restaurant name match
+            idx = int(df[df["Restaurant Name"] == name].index[0])
+            sim_scores = list(enumerate(cosine_sim[idx]))
+            sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+            sim_scores = sim_scores[1:n + 1]  # skip itself
+            restaurant_indices = [i[0] for i in sim_scores]
+    except Exception as e:
+        print(f"Error in recommend_restaurants: {e}")
         return []
-    sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    sim_scores = sim_scores[1:n + 1]  # skip itself
-    restaurant_indices = [i[0] for i in sim_scores]
-    return df.iloc[restaurant_indices][
-        ["Restaurant Name", "City", "Cuisines", "Aggregate rating", "Votes"]
-    ].to_dict(orient="records")
+    
+    # Return with appropriate column names (using converted JSON format)
+    results = []
+    for idx in restaurant_indices:
+        restaurant = df.iloc[idx]
+        result = {
+            "name": restaurant.get("Restaurant Name", ""),
+            "cuisines": restaurant.get("Cuisines", ""),
+            "location": restaurant.get("Location", ""),
+            "city": restaurant.get("City", ""),
+            "address": restaurant.get("Address", ""),
+            "rating": restaurant.get("Aggregate rating", 0),
+            "cost": restaurant.get("Average Cost for two", 0),
+            "votes": restaurant.get("Votes", 0),
+            "type": restaurant.get("Restaurant Type", ""),
+            "match_score": sim_scores[restaurant_indices.index(idx)][1] if restaurant_indices else 0
+        }
+        results.append(result)
+    
+    return results
 
 
 # ---------- Categories (Cuisine-based) via simple clustering ----------
@@ -259,11 +390,11 @@ def compute_categories():
         work = df.copy()
         if "Cuisines" not in work.columns:
             work["Cuisines"] = ""
-        if "Restaurant Name" not in work.columns:
-            work["Restaurant Name"] = ""
+        if "Restaurant_Name" not in work.columns:
+            work["Restaurant_Name"] = ""
 
-        work["_rating"] = pd.to_numeric(work.get("Aggregate rating", 0), errors="coerce").fillna(0.0)
-        work["_cost"] = pd.to_numeric(work.get("Average Cost for two", 0), errors="coerce").fillna(0.0)
+        work["_rating"] = pd.to_numeric(work.get("Rating", 0), errors="coerce").fillna(0.0)
+        work["_cost"] = pd.to_numeric(work.get("Price", 0), errors="coerce").fillna(0.0)
         cuisines_series = work["Cuisines"].fillna("").astype(str).apply(lambda s: s.split(",")[0].strip() if s else "General")
         unique_cuisines = [c for c in cuisines_series.unique() if c]
 
@@ -272,7 +403,7 @@ def compute_categories():
             grouped = {}
             for _, row in work.iterrows():
                 cat = (row.get("Cuisines") or "").split(",")[0].strip() or "General"
-                grouped.setdefault(cat, []).append(row.get("Restaurant Name") or "")
+                grouped.setdefault(cat, []).append(row.get("Restaurant_Name") or "")
             categories_cache = {k: sorted([n for n in v if n]) for k, v in grouped.items()}
             return categories_cache
 
@@ -293,7 +424,7 @@ def compute_categories():
         grouped = {}
         for _, row in work.iterrows():
             cat = cluster_to_cuisine.get(int(row["_cluster"]), "General")
-            name = row.get("Restaurant Name") or ""
+            name = row.get("Restaurant_Name") or ""
             if name:
                 grouped.setdefault(cat, []).append(name)
 
@@ -313,6 +444,54 @@ def homepage():
 def restaurants_page():
     # Keep server rendering minimal; search param will be used by frontend fetch as well
     return render_template("restaurant.html")
+
+@app.route("/restaurant/<restaurant_name>")
+def restaurant_details_page(restaurant_name):
+    """Individual restaurant details page"""
+    try:
+        if df is None or df.empty:
+            return render_template("restaurant_details.html", error="Restaurant data not available")
+        
+        # Find restaurant by name
+        restaurant = df[df["Restaurant Name"] == restaurant_name]
+        if restaurant.empty:
+            return render_template("restaurant_details.html", error="Restaurant not found")
+        
+        restaurant = restaurant.iloc[0]
+        
+        # Get similar restaurants
+        similar_restaurants = get_similar_restaurants(restaurant_name, limit=6)
+        
+        # Format restaurant data for template
+        restaurant_data = {
+            "id": restaurant.get("Restaurant Name", ""),
+            "name": restaurant.get("Restaurant Name", ""),
+            "cuisines": restaurant.get("Cuisines", ""),
+            "city": restaurant.get("City", ""),
+            "location": restaurant.get("Location", ""),
+            "address": restaurant.get("Address", ""),
+            "rating": float(restaurant.get("Aggregate rating", 0)),
+            "votes": int(restaurant.get("Votes", 0)),
+            "price": float(restaurant.get("Average Cost for two", 0)),
+            "price_range": restaurant.get("Price_Range", "₹0"),
+            "type": restaurant.get("Restaurant Type", ""),
+            "latitude": float(restaurant.get("Latitude", 0)),
+            "longitude": float(restaurant.get("Longitude", 0)),
+            "online_order": restaurant.get("Online Order", "No"),
+            "book_table": restaurant.get("Book Table", "No"),
+            "dish_liked": restaurant.get("Dish Liked", ""),
+            "reviews_list": restaurant.get("Reviews List", ""),
+            "cuisine_list": restaurant.get("Cuisine List", ""),
+            "price_category": restaurant.get("Price Category", ""),
+            "rating_category": restaurant.get("Rating Category", "")
+        }
+        
+        return render_template("restaurant_details.html", 
+                             restaurant=restaurant_data, 
+                             similar_restaurants=similar_restaurants)
+    except Exception as e:
+        print(f"Error in restaurant_details_page: {e}")
+        return render_template("restaurant_details.html", error="Failed to load restaurant details")
 
 
 @app.route("/wishlist")
@@ -573,7 +752,7 @@ def user_wishlist():
     wl = load_wishlist()
     items = []
     for item in wl:
-        name = item.get("name") or item.get("Restaurant Name")
+        name = item.get("name") or item.get("Restaurant_Name")
         iuser = item.get("username") or ""
         if name and iuser == username:
             items.append({"id": name, "name": name})
@@ -584,7 +763,7 @@ def user_wishlist():
 @app.route("/wishlist/<id>", methods=["DELETE"])
 def delete_wishlist_item(id):
     wishlist = load_wishlist()
-    new_list = [item for item in wishlist if (item.get("name") or item.get("Restaurant Name")) != id]
+    new_list = [item for item in wishlist if (item.get("name") or item.get("Restaurant_Name")) != id]
     if len(new_list) == len(wishlist):
         return jsonify({"message": "Not found"}), 404
     save_wishlist(new_list)
@@ -637,7 +816,7 @@ def signup_post():
 def get_restaurants():
     """
     Query string:
-      - search (substring on Restaurant Name)
+      - search (substring on Restaurant_Name)
       - city (single value or comma-separated list)
       - cuisine (single value or comma-separated list; matching is case-insensitive substring)
       - rating (min aggregate rating as number)
@@ -659,7 +838,7 @@ def get_restaurants():
     filtered = restaurants
 
     if search:
-        filtered = [r for r in filtered if search in str(r.get("Restaurant Name", "")).lower()]
+        filtered = [r for r in filtered if search in str(r.get("Restaurant_Name", "")).lower()]
 
     if city_list:
         # exact match on City field (case-sensitive as stored); normalize both sides if you prefer
@@ -674,20 +853,20 @@ def get_restaurants():
     if rating:
         try:
             min_rating = float(rating)
-            filtered = [r for r in filtered if float(r.get("Aggregate rating", 0) or 0) >= min_rating]
+            filtered = [r for r in filtered if float(r.get("Rating", 0) or 0) >= min_rating]
         except Exception:
             pass
 
     # Sorting (defensive numeric conversions)
     try:
         if sort == "rating":
-            filtered = sorted(filtered, key=lambda r: float(r.get("Aggregate rating", 0) or 0), reverse=True)
+            filtered = sorted(filtered, key=lambda r: float(r.get("Rating", 0) or 0), reverse=True)
         elif sort == "votes":
             filtered = sorted(filtered, key=lambda r: int(float(r.get("Votes", 0) or 0)), reverse=True)
         elif sort == "cost_low":
-            filtered = sorted(filtered, key=lambda r: int(float(r.get("Average Cost for two", 0) or 0)))
+            filtered = sorted(filtered, key=lambda r: int(float(r.get("Price", 0) or 0)))
         elif sort == "cost_high":
-            filtered = sorted(filtered, key=lambda r: int(float(r.get("Average Cost for two", 0) or 0)), reverse=True)
+            filtered = sorted(filtered, key=lambda r: int(float(r.get("Price", 0) or 0)), reverse=True)
     except Exception:
         # if conversion fails for any record, skip sort
         pass
@@ -883,11 +1062,11 @@ def initialize_chatbot():
         descriptions = []
         
         for r in restaurants:
-            # Use JSON format (full restaurant data)
+            # Use actual column names from the loaded data
             name = r.get("Restaurant Name", "")
             cuisine = r.get("Cuisines", "")
             city = r.get("City", "")
-            country = r.get("Country Name", "")
+            country = r.get("Country_Name", "")
             rating = r.get("Aggregate rating", "")
             cost = r.get("Average Cost for two", "")
             
@@ -919,6 +1098,8 @@ def initialize_chatbot():
         
         if not restaurant_data:
             print("No restaurant data found for chatbot initialization")
+            print(f"Total restaurants available: {len(restaurants)}")
+            print(f"Sample restaurant keys: {list(restaurants[0].keys()) if restaurants else 'No restaurants'}")
             chatbot_vectorizer = None
             chatbot_vectors = None
             chatbot_items = []
@@ -1294,8 +1475,8 @@ def get_fallback_category_items(category):
     
     # Search restaurants for matching keywords
     for restaurant in restaurants:
-        # Use JSON format (full restaurant data)
-        name = restaurant.get("Restaurant Name", "")
+        # Use cleaned dataset format
+        name = restaurant.get("Restaurant_Name", "")
         cuisine = restaurant.get("Cuisines", "")
         city = restaurant.get("City", "")
         
@@ -1324,7 +1505,7 @@ def extract_grouped_categories_from_dataset():
         # Prepare restaurant data for clustering
         restaurant_data = []
         for restaurant in restaurants:
-            name = restaurant.get("Restaurant Name", "")
+            name = restaurant.get("Restaurant_Name", "")
             cuisine = restaurant.get("Cuisines", "")
             city = restaurant.get("City", "")
             
@@ -1465,7 +1646,7 @@ def trending_recommendations():
     # sort by rating then votes (defensive conversions)
     def key_func(r):
         try:
-            return (float(r.get("Aggregate rating", 0) or 0), int(float(r.get("Votes", 0) or 0)))
+            return (float(r.get("Rating", 0) or 0), int(float(r.get("Votes", 0) or 0)))
         except Exception:
             return (0, 0)
 
@@ -1480,6 +1661,157 @@ def get_recommendations():
     results = recommend_restaurants(name)
     return jsonify(results)
 
+# ---------- Advanced ML Recommendation Endpoint ----------
+@app.route("/recommend", methods=["POST"])
+@cache.memoize(timeout=300)  # Cache for 5 minutes
+def get_ml_recommendations():
+    """
+    Advanced ML recommendation endpoint that takes:
+    {
+        "user_input": "North Indian food",
+        "mood": "happy",
+        "time": "evening", 
+        "occasion": "dinner"
+    }
+    """
+    try:
+        if not ML_ENGINE_AVAILABLE:
+            return jsonify({
+                "error": "ML recommendation engine not available",
+                "recommendations": []
+            }), 503
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "error": "No JSON data provided",
+                "recommendations": []
+            }), 400
+        
+        # Extract parameters
+        user_input = data.get("user_input", "").strip()
+        mood = data.get("mood", "happy").strip().lower()
+        time = data.get("time", "evening").strip().lower()
+        occasion = data.get("occasion", "dinner").strip().lower()
+        
+        # Validate parameters
+        valid_moods = ["happy", "sad", "angry", "relaxed", "excited", "bored"]
+        valid_times = ["morning", "afternoon", "evening", "night"]
+        valid_occasions = ["birthday", "date", "party", "lunch", "dinner", "meeting", "anniversary"]
+        
+        if mood not in valid_moods:
+            mood = "happy"
+        if time not in valid_times:
+            time = "evening"
+        if occasion not in valid_occasions:
+            occasion = "dinner"
+        
+        if not user_input:
+            user_input = "restaurant"
+        
+        # Log the recommendation request
+        log_user_interaction('ml_recommendation', {
+            'user_input': user_input,
+            'mood': mood,
+            'time': time,
+            'occasion': occasion
+        })
+        
+        # Get recommendations from ML engine
+        recommendations = recommend_restaurants(user_input, n=5)
+        
+        # Format recommendations for response
+        formatted_recommendations = []
+        for rec in recommendations:
+            formatted_recommendations.append({
+                "name": rec.get("name", ""),
+                "cuisines": rec.get("cuisines", ""),
+                "rating": rec.get("rating", 0),
+                "address": rec.get("location", ""),
+                "cost": rec.get("cost", 0),
+                "match_score": round(rec.get("match_score", 0), 3),
+                "type": rec.get("type", "hybrid")
+            })
+        
+        return jsonify({
+            "recommendations": formatted_recommendations,
+            "query": {
+                "user_input": user_input,
+                "mood": mood,
+                "time": time,
+                "occasion": occasion
+            },
+            "total": len(formatted_recommendations)
+        })
+        
+    except Exception as e:
+        print(f"Error in ML recommendations: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Internal server error",
+            "recommendations": []
+        }), 500
+
+# ---------- Model Loading Functions ----------
+def load_trained_models():
+    """Load the trained models from the models directory"""
+    try:
+        import pickle
+        model_path = os.path.join("models", "model.pkl")
+        similarity_path = os.path.join("models", "similarity.pkl")
+        
+        if os.path.exists(model_path) and os.path.exists(similarity_path):
+            with open(model_path, 'rb') as f:
+                model_data = pickle.load(f)
+            with open(similarity_path, 'rb') as f:
+                similarity_matrix = pickle.load(f)
+            
+            print(f"Loaded trained models: {len(model_data['restaurant_data'])} restaurants")
+            return model_data, similarity_matrix
+        else:
+            print("Trained models not found, using basic similarity")
+            return None, None
+    except Exception as e:
+        print(f"Error loading trained models: {e}")
+        return None, None
+
+# Load trained models if available
+trained_model_data, trained_similarity = load_trained_models()
+
+# ---------- ML Engine Status Endpoint ----------
+@app.route("/ml/status", methods=["GET"])
+def ml_engine_status():
+    """Check ML engine status and availability"""
+    try:
+        if not ML_ENGINE_AVAILABLE:
+            return jsonify({
+                "available": False,
+                "message": "ML recommendation engine not available"
+            })
+        
+        # Check if models are loaded
+        models_loaded = (
+            recommendation_engine.tfidf_vectorizer is not None and
+            recommendation_engine.restaurants is not None
+        )
+        
+        return jsonify({
+            "available": True,
+            "models_loaded": models_loaded,
+            "restaurant_count": len(recommendation_engine.restaurants) if recommendation_engine.restaurants else 0,
+            "content_based": recommendation_engine.tfidf_vectorizer is not None,
+            "collaborative": recommendation_engine.lightfm_model is not None,
+            "context_aware": recommendation_engine.sentence_model is not None,
+            "trained_models_available": trained_model_data is not None
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "available": False,
+            "error": str(e)
+        }), 500
+
 
 # ---------- API: Categories ----------
 @app.route("/api/categories", methods=["GET"])
@@ -1488,6 +1820,409 @@ def api_categories():
     if categories_cache is None:
         compute_categories()
     return jsonify(categories_cache or {})
+
+# ---------- Enhanced API: Search and Filtering ----------
+@app.route("/api/search", methods=["GET", "POST"])
+def search_restaurants():
+    """Enhanced search with filters and pagination"""
+    try:
+        if request.method == "POST":
+            data = request.json or {}
+        else:
+            data = request.args.to_dict()
+        
+        # Extract search parameters
+        query = data.get("q", "").strip()
+        city = data.get("city", "").strip()
+        cuisine = data.get("cuisine", "").strip()
+        rating_min = float(data.get("rating_min", 0))
+        price_max = float(data.get("price_max", float('inf')))
+        mood = data.get("mood", "").strip()
+        time_of_day = data.get("time", "").strip()
+        occasion = data.get("occasion", "").strip()
+        page = int(data.get("page", 1))
+        per_page = int(data.get("per_page", 20))
+        sort_by = data.get("sort", "rating")  # rating, price, distance, name
+        
+        # Start with all restaurants - use global df
+        global df
+        if df is None or df.empty:
+            print("Debug: DataFrame is None or empty")
+            return jsonify({
+                "restaurants": [],
+                "total": 0,
+                "page": page,
+                "per_page": per_page,
+                "total_pages": 0
+            })
+        
+        results = df.copy()
+        print(f"Debug: Starting with {len(results)} restaurants")
+        
+        # Apply filters
+        if query:
+            # Text search in combined features - handle NaN values
+            mask = results["Combined_Features"].fillna("").str.contains(query, case=False, na=False)
+            results = results[mask]
+        
+        if city:
+            mask = results["City"].fillna("").str.contains(city, case=False, na=False)
+            results = results[mask]
+        
+        if cuisine:
+            mask = results["Cuisines"].fillna("").str.contains(cuisine, case=False, na=False)
+            results = results[mask]
+        
+        if rating_min > 0:
+            results = results[results["Rating"] >= rating_min]
+        
+        if price_max < float('inf'):
+            results = results[results["Price"] <= price_max]
+        
+        # Apply mood/time/occasion filters using ML logic
+        if mood or time_of_day or occasion:
+            results = apply_contextual_filters(results, mood, time_of_day, occasion)
+        
+        # Sort results
+        if sort_by == "rating":
+            results = results.sort_values("Rating", ascending=False)
+        elif sort_by == "price":
+            results = results.sort_values("Price", ascending=True)
+        elif sort_by == "name":
+            results = results.sort_values("Restaurant_Name", ascending=True)
+        
+        # Pagination
+        total = len(results)
+        total_pages = (total + per_page - 1) // per_page
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        page_results = results.iloc[start_idx:end_idx]
+        
+        # Format results
+        restaurants = []
+        for _, restaurant in page_results.iterrows():
+            restaurants.append({
+                "id": restaurant.get("Restaurant_Name", ""),
+                "name": restaurant.get("Restaurant_Name", ""),
+                "cuisines": restaurant.get("Cuisines", ""),
+                "city": restaurant.get("City", ""),
+                "location": restaurant.get("Location", ""),
+                "address": restaurant.get("Address", ""),
+                "rating": float(restaurant.get("Rating", 0)),
+                "votes": int(restaurant.get("Votes", 0)),
+                "price": float(restaurant.get("Price", 0)),
+                "price_range": restaurant.get("Price_Range", "₹0"),
+                "type": restaurant.get("Restaurant_Type", ""),
+                "latitude": float(restaurant.get("Latitude", 0)) if pd.notna(restaurant.get("Latitude")) else None,
+                "longitude": float(restaurant.get("Longitude", 0)) if pd.notna(restaurant.get("Longitude")) else None,
+                "online_order": restaurant.get("Online_Order", "No"),
+                "book_table": restaurant.get("Book_Table", "No")
+            })
+        
+        return jsonify({
+            "restaurants": restaurants,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages,
+            "filters_applied": {
+                "query": query,
+                "city": city,
+                "cuisine": cuisine,
+                "rating_min": rating_min,
+                "price_max": price_max,
+                "mood": mood,
+                "time": time_of_day,
+                "occasion": occasion
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in search_restaurants: {e}")
+        return jsonify({"error": "Search failed", "details": str(e)}), 500
+
+def apply_contextual_filters(df, mood, time_of_day, occasion):
+    """Apply mood, time, and occasion filters using ML logic"""
+    if df.empty:
+        return df
+    
+    # Rule-based mappings for mood/time/occasion
+    mood_cuisines = {
+        "happy": ["Desserts", "Ice Cream", "Cafe", "Bakery", "Fast Food", "American", "Pizza", "Burger", "Finger Food", "Beverages"],
+        "sad": ["Chinese", "Italian", "Desserts", "North Indian", "South Indian", "Comfort Food", "Soups", "Noodles"],
+        "angry": ["North Indian", "South Indian", "Chinese", "Thai", "Fast Food", "Spicy", "Curry", "Biryani"],
+        "relaxed": ["Cafe", "Coffee", "Mediterranean", "Continental", "Bakery", "Tea", "Light Bites", "Salads"],
+        "excited": ["Fast Food", "Pizza", "Burger", "American", "Continental", "Finger Food", "Snacks", "Street Food"],
+        "bored": ["Continental", "Chinese", "Italian", "North Indian", "South Indian", "Fusion", "International", "Multi-cuisine"]
+    }
+    
+    time_cuisines = {
+        "morning": ["Cafe", "Coffee", "Bakery", "Continental", "Quick Bites", "Breakfast", "Tea", "Light Bites"],
+        "afternoon": ["North Indian", "South Indian", "Chinese", "Continental", "Quick Bites", "Lunch", "Thali", "Combo"],
+        "evening": ["North Indian", "South Indian", "Chinese", "Continental", "Italian", "Dinner", "Fine Dining", "Multi-cuisine"],
+        "night": ["Fast Food", "Pizza", "Burger", "North Indian", "South Indian", "Late Night", "Street Food", "Snacks"]
+    }
+    
+    occasion_cuisines = {
+        "date": ["Italian", "French", "Mediterranean", "Continental", "Fine Dining", "Romantic", "Candle Light"],
+        "birthday": ["Desserts", "Cake", "American", "Continental", "Finger Food", "Party", "Celebration"],
+        "party": ["Fast Food", "Pizza", "Burger", "Finger Food", "American", "Snacks", "Street Food"],
+        "meeting": ["Cafe", "Coffee", "Continental", "Quick Bites", "Bakery", "Business", "Professional"],
+        "anniversary": ["Italian", "French", "Mediterranean", "Continental", "Fine Dining", "Romantic", "Special"],
+        "lunch": ["North Indian", "South Indian", "Chinese", "Continental", "Quick Bites", "Thali", "Combo"],
+        "dinner": ["North Indian", "South Indian", "Chinese", "Continental", "Italian", "Fine Dining", "Multi-cuisine"]
+    }
+    
+    # Apply filters
+    mask = pd.Series([True] * len(df), index=df.index)
+    
+    if mood and mood in mood_cuisines:
+        mood_mask = df["Cuisines"].fillna("").str.contains("|".join(mood_cuisines[mood]), case=False, na=False)
+        mask = mask & mood_mask
+    
+    if time_of_day and time_of_day in time_cuisines:
+        time_mask = df["Cuisines"].fillna("").str.contains("|".join(time_cuisines[time_of_day]), case=False, na=False)
+        mask = mask & time_mask
+    
+    if occasion and occasion in occasion_cuisines:
+        occasion_mask = df["Cuisines"].fillna("").str.contains("|".join(occasion_cuisines[occasion]), case=False, na=False)
+        mask = mask & occasion_mask
+    
+    return df[mask]
+
+@app.route("/api/restaurant/<restaurant_name>")
+def get_restaurant_details(restaurant_name):
+    """Get detailed information about a specific restaurant"""
+    try:
+        if df is None or df.empty:
+            return jsonify({"error": "Restaurant data not available"}), 404
+        
+        # Find restaurant by name
+        restaurant = df[df["Restaurant Name"] == restaurant_name]
+        if restaurant.empty:
+            return jsonify({"error": "Restaurant not found"}), 404
+        
+        restaurant = restaurant.iloc[0]
+        
+        # Get similar restaurants
+        similar = recommend_restaurants(restaurant_name, n=5)
+        
+        details = {
+            "id": restaurant.get("Restaurant Name", ""),
+            "name": restaurant.get("Restaurant Name", ""),
+            "cuisines": restaurant.get("Cuisines", ""),
+            "city": restaurant.get("City", ""),
+            "location": restaurant.get("Location", ""),
+            "address": restaurant.get("Address", ""),
+            "rating": float(restaurant.get("Aggregate rating", 0)),
+            "votes": int(restaurant.get("Votes", 0)),
+            "price": float(restaurant.get("Average Cost for two", 0)),
+            "price_range": restaurant.get("Price_Range", "₹0"),
+            "type": restaurant.get("Restaurant Type", ""),
+            "latitude": float(restaurant.get("Latitude", 0)),
+            "longitude": float(restaurant.get("Longitude", 0)),
+            "online_order": restaurant.get("Online Order", "No"),
+            "book_table": restaurant.get("Book Table", "No"),
+            "dish_liked": restaurant.get("Dish Liked", ""),
+            "reviews_list": restaurant.get("Reviews List", ""),
+            "cuisine_list": restaurant.get("Cuisine List", ""),
+            "price_category": restaurant.get("Price Category", ""),
+            "rating_category": restaurant.get("Rating Category", ""),
+            "similar_restaurants": similar
+        }
+        
+        return jsonify(details)
+        
+    except Exception as e:
+        print(f"Error in get_restaurant_details: {e}")
+        return jsonify({"error": "Failed to get restaurant details", "details": str(e)}), 500
+
+def get_similar_restaurants(restaurant_name, limit=6):
+    """Get similar restaurants for the details page"""
+    try:
+        # Use the existing recommendation function
+        similar = recommend_restaurants(restaurant_name, n=limit)
+        return similar
+    except Exception as e:
+        print(f"Error in get_similar_restaurants: {e}")
+        return []
+
+@app.route("/api/nearby", methods=["GET", "POST"])
+def get_nearby_restaurants():
+    """Get restaurants near a location with distance calculations"""
+    try:
+        if request.method == "POST":
+            data = request.json or {}
+        else:
+            data = request.args.to_dict()
+        
+        # Get location parameters
+        latitude = float(data.get("lat", 0))
+        longitude = float(data.get("lng", 0))
+        city = data.get("city", "").strip()
+        radius_km = float(data.get("radius", 10))  # Default 10km radius
+        
+        if df is None or df.empty:
+            return jsonify({"restaurants": [], "total": 0})
+        
+        results = df.copy()
+        
+        # If coordinates provided, calculate distances
+        if latitude != 0 and longitude != 0:
+            results = calculate_distances(results, latitude, longitude)
+            results = results[results["distance_km"] <= radius_km]
+            results = results.sort_values("distance_km")
+        elif city:
+            # Fallback to city-based filtering
+            results = results[results["City"].str.contains(city, case=False, na=False)]
+        
+        # Format results
+        restaurants = []
+        for _, restaurant in results.iterrows():
+            distance_text = ""
+            if latitude != 0 and longitude != 0 and "distance_km" in restaurant:
+                distance = restaurant["distance_km"]
+                if distance < 1:
+                    distance_text = f"{distance*1000:.0f}m"
+                else:
+                    distance_text = f"{distance:.1f}km"
+            
+            restaurants.append({
+                "id": restaurant.get("Restaurant_Name", ""),
+                "name": restaurant.get("Restaurant_Name", ""),
+                "cuisines": restaurant.get("Cuisines", ""),
+                "city": restaurant.get("City", ""),
+                "location": restaurant.get("Location", ""),
+                "address": restaurant.get("Address", ""),
+                "rating": float(restaurant.get("Rating", 0)),
+                "votes": int(restaurant.get("Votes", 0)),
+                "price": float(restaurant.get("Price", 0)),
+                "price_range": restaurant.get("Price_Range", "₹0"),
+                "type": restaurant.get("Restaurant_Type", ""),
+                "latitude": float(restaurant.get("Latitude", 0)) if pd.notna(restaurant.get("Latitude")) else None,
+                "longitude": float(restaurant.get("Longitude", 0)) if pd.notna(restaurant.get("Longitude")) else None,
+                "distance": distance_text,
+                "distance_km": float(restaurant.get("distance_km", 0)) if "distance_km" in restaurant else 0
+            })
+        
+        return jsonify({
+            "restaurants": restaurants,
+            "total": len(restaurants),
+            "location": {
+                "latitude": latitude,
+                "longitude": longitude,
+                "city": city,
+                "radius_km": radius_km
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in get_nearby_restaurants: {e}")
+        return jsonify({"error": "Failed to get nearby restaurants", "details": str(e)}), 500
+
+def calculate_distances(df, user_lat, user_lng):
+    """Calculate distances from user location to restaurants"""
+    from math import radians, cos, sin, asin, sqrt
+    
+    def haversine(lon1, lat1, lon2, lat2):
+        """Calculate the great circle distance between two points on earth"""
+        # Convert decimal degrees to radians
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+        
+        # Haversine formula
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a))
+        r = 6371  # Radius of earth in kilometers
+        return c * r
+    
+    # Calculate distances
+    distances = []
+    for _, restaurant in df.iterrows():
+        rest_lat = restaurant.get("Latitude", 0)
+        rest_lng = restaurant.get("Longitude", 0)
+        
+        if rest_lat != 0 and rest_lng != 0:
+            distance = haversine(user_lng, user_lat, rest_lng, rest_lat)
+        else:
+            distance = float('inf')  # No coordinates available
+        
+        distances.append(distance)
+    
+    df["distance_km"] = distances
+    return df
+
+@app.route("/api/debug", methods=["GET"])
+def debug_endpoint():
+    """Debug endpoint to check DataFrame status"""
+    global df, restaurants
+    return jsonify({
+        "restaurants_length": len(restaurants) if restaurants else 0,
+        "restaurants_sample": restaurants[:2] if restaurants and len(restaurants) > 0 else None,
+        "df_is_none": df is None,
+        "df_empty": df.empty if df is not None else True,
+        "df_shape": df.shape if df is not None else None,
+        "df_columns": list(df.columns) if df is not None else None,
+        "sample_combined_features": df["Combined_Features"].head().tolist() if df is not None and "Combined_Features" in df.columns else None
+    })
+
+@app.route("/api/featured", methods=["GET"])
+def get_featured_restaurants():
+    """Get featured restaurants based on rating, popularity, and recency"""
+    try:
+        if df is None or df.empty:
+            return jsonify({"restaurants": [], "total": 0})
+        
+        # Featured selection logic: high rating + high votes + recent
+        featured = df.copy()
+        
+        # Filter for high-quality restaurants
+        featured = featured[featured["Rating"] >= 4.0]
+        featured = featured[featured["Votes"] >= 100]
+        
+        # Calculate featured score (weighted combination)
+        featured["featured_score"] = (
+            featured["Rating"] * 0.4 +
+            (featured["Votes"] / featured["Votes"].max()) * 0.3 +
+            (1 - featured["Price"] / featured["Price"].max()) * 0.3  # Lower price = higher score
+        )
+        
+        # Sort by featured score and take top 12
+        featured = featured.sort_values("featured_score", ascending=False).head(12)
+        
+        # Format results
+        restaurants = []
+        for _, restaurant in featured.iterrows():
+            restaurants.append({
+                "id": restaurant.get("Restaurant_Name", ""),
+                "name": restaurant.get("Restaurant_Name", ""),
+                "cuisines": restaurant.get("Cuisines", ""),
+                "city": restaurant.get("City", ""),
+                "location": restaurant.get("Location", ""),
+                "address": restaurant.get("Address", ""),
+                "rating": float(restaurant.get("Rating", 0)),
+                "votes": int(restaurant.get("Votes", 0)),
+                "price": float(restaurant.get("Price", 0)),
+                "price_range": restaurant.get("Price_Range", "₹0"),
+                "type": restaurant.get("Restaurant_Type", ""),
+                "latitude": float(restaurant.get("Latitude", 0)) if pd.notna(restaurant.get("Latitude")) else None,
+                "longitude": float(restaurant.get("Longitude", 0)) if pd.notna(restaurant.get("Longitude")) else None,
+                "online_order": restaurant.get("Online_Order", "No"),
+                "book_table": restaurant.get("Book_Table", "No"),
+                "dish_liked": restaurant.get("Dish_Liked", ""),
+                "featured_score": float(restaurant.get("featured_score", 0))
+            })
+        
+        return jsonify({
+            "restaurants": restaurants,
+            "total": len(restaurants),
+            "selection_criteria": "High rating (4.0+), high votes (100+), balanced price-quality ratio"
+        })
+        
+    except Exception as e:
+        print(f"Error in get_featured_restaurants: {e}")
+        return jsonify({"error": "Failed to get featured restaurants", "details": str(e)}), 500
 
 # ---------- API: Wishlist ----------
 @app.route("/api/wishlist", methods=["GET"])
@@ -1499,13 +2234,13 @@ def get_wishlist():
 def add_to_wishlist():
     data = request.json or {}
     wishlist = load_wishlist()
-    name = data.get("name") or data.get("Restaurant Name") or ""
+    name = data.get("name") or data.get("Restaurant_Name") or ""
     if not name:
         return jsonify({"message": "Missing name"}), 400
 
     username = session.get("user") or ""
     for item in wishlist:
-        iname = item.get("name") or item.get("Restaurant Name")
+        iname = item.get("name") or item.get("Restaurant_Name")
         iuser = item.get("username") or ""
         if iname == name and iuser == username:
             return jsonify({"message": "Already in wishlist"}), 400
@@ -1519,7 +2254,7 @@ def add_to_wishlist():
 def remove_from_wishlist(name):
     wishlist = load_wishlist()
     username = session.get("user") or ""
-    new_list = [item for item in wishlist if not (((item.get("name") or item.get("Restaurant Name")) == name) and ((item.get("username") or "") == username))]
+    new_list = [item for item in wishlist if not (((item.get("name") or item.get("Restaurant_Name")) == name) and ((item.get("username") or "") == username))]
     save_wishlist(new_list)
     return jsonify({"message": "Removed from wishlist"})
 
@@ -1532,7 +2267,7 @@ def remove_wishlist_item():
         return redirect(url_for("wishlist_page"))
     wishlist = load_wishlist()
     username = session.get("user") or ""
-    new_list = [item for item in wishlist if not (((item.get("name") or item.get("Restaurant Name")) == name) and ((item.get("username") or "") == username))]
+    new_list = [item for item in wishlist if not (((item.get("name") or item.get("Restaurant_Name")) == name) and ((item.get("username") or "") == username))]
     save_wishlist(new_list)
     return redirect(url_for("wishlist_page"))
 
@@ -1542,10 +2277,10 @@ def remove_wishlist_item():
 def wishlist_details():
     username = session.get("user") or ""
     wl = load_wishlist()
-    names = { (item.get("name") or item.get("Restaurant Name")) for item in wl if (item.get("username") or "") == username }
+    names = { (item.get("name") or item.get("Restaurant_Name")) for item in wl if (item.get("username") or "") == username }
     if not names:
         return jsonify([])
-    detailed = [r for r in restaurants if (r.get("Restaurant Name") or "") in names]
+    detailed = [r for r in restaurants if (r.get("Restaurant_Name") or "") in names]
     return jsonify(detailed)
 
 
@@ -1682,6 +2417,21 @@ def admin_logout():
 
 # ---------- Run ----------
 if __name__ == "__main__":
+    # Initialize ML recommendation engine
+    if ML_ENGINE_AVAILABLE:
+        def _init_ml_engine():
+            try:
+                print("Initializing ML recommendation engine...")
+                initialize_recommendation_engine()
+                print("ML recommendation engine initialized successfully!")
+            except Exception as e:
+                print(f"Error initializing ML recommendation engine: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Initialize ML engine in background thread
+        threading.Thread(target=_init_ml_engine, daemon=True).start()
+    
     # Load persisted predictor first (non-blocking startup if available)
     try:
         import joblib
@@ -1739,15 +2489,8 @@ if __name__ == "__main__":
 
         threading.Thread(target=_train_predictive_model, daemon=True).start()
 
-    # Initialize chatbot in background
-    def _init_chatbot():
-        print("Starting chatbot initialization...")
-        initialize_chatbot()
-        print("Chatbot initialization completed")
-    threading.Thread(target=_init_chatbot, daemon=True).start()
-    
-    # Also initialize immediately for faster startup
-    print("Initializing chatbot synchronously...")
+    # Initialize chatbot after data is loaded
+    print("Initializing chatbot with loaded data...")
     initialize_chatbot()
 
     port = int(os.environ.get("PORT", 5000))

@@ -11,21 +11,65 @@
   </div>
   <a href="{{ url_for('restaurants_page') }}" class="btn inline-block mt-6">Explore Restaurants</a>
   
-  <!-- Premium Search Bar -->
+  <!-- Premium Search Bar with Side Filters -->
   <div class="search-section mt-8">
-    <div class="search-wrapper">
-      <input type="text" id="search-input" placeholder="Search food or place...">
-      <i class="fa fa-search search-icon" onclick="submitSearch()" aria-hidden="true"></i>
+    <div class="search-and-filters-container">
+      <!-- Search Bar -->
+      <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="Search food or place..." class="search-input-visible" oninput="handleSearchInput()" onblur="setTimeout(() => hideSearchSuggestions(), 200)">
+        <i class="fa fa-search search-icon" onclick="submitSearch()" aria-hidden="true"></i>
+      </div>
+      
+      <!-- Filters Beside Search Bar -->
+      <div class="filters-beside-search">
+        <div class="filter-group-inline">
+          <label for="mood-filter">😊 Mood</label>
+          <select id="mood-filter" class="filter-select-inline">
+            <option value="">Any Mood</option>
+            <option value="happy">😊 Happy</option>
+            <option value="sad">😢 Sad</option>
+            <option value="angry">😠 Angry</option>
+            <option value="relaxed">😌 Relaxed</option>
+            <option value="excited">🤩 Excited</option>
+            <option value="bored">😐 Bored</option>
+          </select>
+        </div>
+        
+        <div class="filter-group-inline">
+          <label for="time-filter">🕐 Time</label>
+          <select id="time-filter" class="filter-select-inline">
+            <option value="">Any Time</option>
+            <option value="morning">🌅 Morning</option>
+            <option value="afternoon">☀️ Afternoon</option>
+            <option value="evening">🌆 Evening</option>
+            <option value="night">🌙 Night</option>
+          </select>
+        </div>
+        
+        <div class="filter-group-inline">
+          <label for="occasion-filter">🎉 Occasion</label>
+          <select id="occasion-filter" class="filter-select-inline">
+            <option value="">Any Occasion</option>
+            <option value="dinner">🍽️ Dinner</option>
+            <option value="lunch">🥗 Lunch</option>
+            <option value="date">💕 Date</option>
+            <option value="birthday">🎂 Birthday</option>
+            <option value="party">🎉 Party</option>
+            <option value="meeting">💼 Meeting</option>
+            <option value="anniversary">💍 Anniversary</option>
+          </select>
+        </div>
+        
+        <button class="filter-btn-inline" onclick="applySmartFilters()">
+          <i class="fa fa-magic"></i> Find Perfect Match
+        </button>
+      </div>
     </div>
     <div id="suggestion-box" class="suggestion-box" aria-live="polite"></div>
   </div>
   
-  <!-- ML-Powered Category Bar -->
-  <div id="category-bar" class="category-bar"></div>
-  
-  
-  <!-- Category Results -->
-  <div id="category-results" class="category-results"></div>
+  <!-- Smart Filter Results -->
+  <div id="smart-filter-results" class="smart-filter-results" style="display: none;"></div>
 </div>
 
 <!-- Featured Restaurants Carousel -->
@@ -33,56 +77,10 @@
   <div class="container">
     <h2 class="section-title">🏆 Featured Restaurants</h2>
     <p class="section-subtitle">Discover the most loved dining experiences</p>
-    <div class="restaurant-carousel">
-      <div class="restaurant-card featured">
-        <div class="restaurant-image">
-          <img src="/static/images/pizza.jpg" alt="Bella Vista">
-          <div class="rating-badge">4.8 ⭐</div>
-        </div>
-        <div class="restaurant-info">
-          <h3>Bella Vista</h3>
-          <p class="cuisine-tag">Italian • Fine Dining</p>
-          <p class="restaurant-description">Authentic Italian cuisine with a modern twist</p>
-          <div class="restaurant-meta">
-            <span class="price-range">$$$</span>
-            <span class="distance">0.5 km away</span>
-          </div>
-          <button class="view-details-btn" onclick="goToRestaurant('Bella Vista')">View Details</button>
-        </div>
-      </div>
-      
-      <div class="restaurant-card featured">
-        <div class="restaurant-image">
-          <img src="/static/images/sushi.jpg" alt="Sakura Sushi">
-          <div class="rating-badge">4.9 ⭐</div>
-        </div>
-        <div class="restaurant-info">
-          <h3>Sakura Sushi</h3>
-          <p class="cuisine-tag">Japanese • Sushi</p>
-          <p class="restaurant-description">Fresh sushi and traditional Japanese dishes</p>
-          <div class="restaurant-meta">
-            <span class="price-range">$$</span>
-            <span class="distance">1.2 km away</span>
-          </div>
-          <button class="view-details-btn" onclick="goToRestaurant('Sakura Sushi')">View Details</button>
-        </div>
-      </div>
-      
-      <div class="restaurant-card featured">
-        <div class="restaurant-image">
-          <img src="/static/images/bbq.jpg" alt="Smokehouse Grill">
-          <div class="rating-badge">4.7 ⭐</div>
-        </div>
-        <div class="restaurant-info">
-          <h3>Smokehouse Grill</h3>
-          <p class="cuisine-tag">American • BBQ</p>
-          <p class="restaurant-description">Premium BBQ and grilled specialties</p>
-          <div class="restaurant-meta">
-            <span class="price-range">$$</span>
-            <span class="distance">0.8 km away</span>
-          </div>
-          <button class="view-details-btn" onclick="goToRestaurant('Smokehouse Grill')">View Details</button>
-        </div>
+    <div class="restaurant-carousel" id="featuredRestaurants">
+      <!-- Featured restaurants will be loaded dynamically -->
+      <div class="loading-placeholder">
+        <p>Loading featured restaurants...</p>
       </div>
     </div>
   </div>
@@ -97,31 +95,13 @@
       <input type="text" id="location-input" placeholder="Enter your location or use current location">
       <button onclick="getCurrentLocation()" class="location-btn">📍</button>
     </div>
-    <div class="nearby-restaurants">
-      <div class="nearby-card">
-        <img src="/static/images/coffee.jpg" alt="Café Mocha">
-        <div class="nearby-info">
-          <h4>Café Mocha</h4>
-          <p>0.3 km • Coffee & Pastries</p>
-          <div class="quick-actions">
-            <button class="quick-btn">View Menu</button>
-            <button class="quick-btn">Directions</button>
-          </div>
-        </div>
-      </div>
-      <div class="nearby-card">
-        <img src="/static/images/burger.jpg" alt="Burger Palace">
-        <div class="nearby-info">
-          <h4>Burger Palace</h4>
-          <p>0.7 km • American • Fast Food</p>
-          <div class="quick-actions">
-            <button class="quick-btn">View Menu</button>
-            <button class="quick-btn">Directions</button>
-          </div>
-        </div>
+    <div class="nearby-restaurants" id="nearbyRestaurants">
+      <!-- Nearby restaurants will be loaded dynamically -->
+      <div class="loading-placeholder">
+        <p>Enter your location to find nearby restaurants</p>
       </div>
     </div>
-    <button class="explore-nearby-btn" onclick="exploreNearby()">Explore More Nearby</button>
+    <button class="explore-nearby-btn" onclick="searchNearbyRestaurants()">Search Nearby</button>
   </div>
 </section>
 
@@ -158,6 +138,7 @@
     </div>
   </div>
 </section>
+
 
 <!-- Mood-Based Filters -->
 <section class="mood-section">
@@ -951,6 +932,224 @@ html, body { overflow: auto; }
   50% { transform: translateY(-10px); }
 }
 
+/* ===== AI RECOMMENDATION ENGINE ===== */
+.ai-recommendation-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 80px 0;
+  margin: 40px 0;
+  color: white;
+}
+
+.ai-recommendation-section .section-title,
+.ai-recommendation-section .section-subtitle {
+  color: white;
+}
+
+.recommendation-form {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 15px 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.recommend-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 18px 30px;
+  border-radius: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.recommend-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.recommend-btn:active {
+  transform: translateY(0);
+}
+
+.recommend-btn.loading {
+  pointer-events: none;
+}
+
+.recommend-btn.loading .btn-text {
+  display: none;
+}
+
+.recommend-btn.loading .btn-loading {
+  display: inline;
+}
+
+.recommendations-results {
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.recommendations-results h3 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+}
+
+.recommendations-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.recommendation-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #667eea;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.recommendation-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.recommendation-score {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.recommendation-cuisine {
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.recommendation-location {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.recommendation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.recommendation-rating {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.recommendation-cost {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.recommendation-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.recommendation-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.recommendation-btn.primary {
+  background: #667eea;
+  color: white;
+}
+
+.recommendation-btn.primary:hover {
+  background: #5a6fd8;
+}
+
+.recommendation-btn.secondary {
+  background: #f8f9fa;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.recommendation-btn.secondary:hover {
+  background: #667eea;
+  color: white;
+}
+
 /* ===== MOOD-BASED FILTERS ===== */
 .mood-section {
   background: #f8f9fa;
@@ -1543,6 +1742,120 @@ async function loadCategory(category) {
 }
 
 // ===== NEW PREMIUM SECTIONS JAVASCRIPT =====
+
+// AI Recommendation Functions
+async function getAIRecommendations() {
+  const foodPreference = document.getElementById('food-preference').value.trim();
+  const mood = document.getElementById('mood-select').value;
+  const time = document.getElementById('time-select').value;
+  const occasion = document.getElementById('occasion-select').value;
+  
+  if (!foodPreference) {
+    alert('Please tell us what kind of food you\'re craving!');
+    return;
+  }
+  
+  const recommendBtn = document.querySelector('.recommend-btn');
+  const btnText = recommendBtn.querySelector('.btn-text');
+  const btnLoading = recommendBtn.querySelector('.btn-loading');
+  
+  // Show loading state
+  recommendBtn.classList.add('loading');
+  btnText.style.display = 'none';
+  btnLoading.style.display = 'inline';
+  
+  try {
+    console.log('Getting AI recommendations...', { foodPreference, mood, time, occasion });
+    
+    const response = await fetch('/recommend', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_input: foodPreference,
+        mood: mood,
+        time: time,
+        occasion: occasion
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('AI recommendations received:', data);
+    
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    displayRecommendations(data.recommendations, data.query);
+    
+  } catch (error) {
+    console.error('Error getting AI recommendations:', error);
+    alert(`Sorry, we couldn't get recommendations right now. Error: ${error.message}`);
+  } finally {
+    // Hide loading state
+    recommendBtn.classList.remove('loading');
+    btnText.style.display = 'inline';
+    btnLoading.style.display = 'none';
+  }
+}
+
+function displayRecommendations(recommendations, query) {
+  const resultsDiv = document.getElementById('recommendations-results');
+  const listDiv = document.getElementById('recommendations-list');
+  
+  if (!recommendations || recommendations.length === 0) {
+    listDiv.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #666;">
+        <h4>No recommendations found</h4>
+        <p>Try adjusting your preferences or search terms.</p>
+      </div>
+    `;
+    resultsDiv.style.display = 'block';
+    return;
+  }
+  
+  listDiv.innerHTML = recommendations.map(rec => `
+    <div class="recommendation-card">
+      <div class="recommendation-header">
+        <div>
+          <div class="recommendation-name">${rec.name}</div>
+          <div class="recommendation-cuisine">${rec.cuisines}</div>
+          <div class="recommendation-location">📍 ${rec.address}</div>
+        </div>
+        <div class="recommendation-score">${Math.round(rec.match_score * 100)}% match</div>
+      </div>
+      
+      <div class="recommendation-meta">
+        <div class="recommendation-rating">⭐ ${rec.rating}/5</div>
+        <div class="recommendation-cost">💰 ₹${rec.cost} for two</div>
+      </div>
+      
+      <div class="recommendation-actions">
+        <button class="recommendation-btn primary" onclick="viewRestaurantDetails('${rec.name}')">
+          View Details
+        </button>
+        <button class="recommendation-btn secondary" onclick="addToWishlist('${rec.name}')">
+          ❤️ Save
+        </button>
+      </div>
+    </div>
+  `).join('');
+  
+  resultsDiv.style.display = 'block';
+  
+  // Scroll to results
+  resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function viewRestaurantDetails(restaurantName) {
+  console.log(`Viewing details for: ${restaurantName}`);
+  window.location.href = `/restaurants?search=${encodeURIComponent(restaurantName)}`;
+}
 
 // Featured Restaurants Functions
 function goToRestaurant(restaurantName) {

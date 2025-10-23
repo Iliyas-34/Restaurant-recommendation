@@ -622,3 +622,796 @@ document.addEventListener("mouseout", function (e) {
   const btn = e.target.closest && e.target.closest(".card button");
   if (btn) btn.style.transform = "";
 });
+
+// =============== Predictive Typing Functionality ===============
+let searchTimeout;
+let currentSuggestions = [];
+
+// Enhanced search input handler with predictive typing
+function handleSearchInput() {
+    const searchInput = document.getElementById('search-input');
+    const query = searchInput.value.trim();
+    
+    // Clear previous timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    
+    // If query is too short, clear suggestions
+    if (query.length < 2) {
+        hideSearchSuggestions();
+        return;
+    }
+    
+    // Debounce the search
+    searchTimeout = setTimeout(async () => {
+        try {
+            // Try ML-based prediction first
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: query })
+            });
+            
+            const data = await response.json();
+            if (data.suggestion && data.suggestion !== query) {
+                displaySearchSuggestions([data.suggestion]);
+            } else {
+                // Fallback to search-based suggestions
+                await updateSearchSuggestions(query);
+            }
+        } catch (error) {
+            console.error('Error getting suggestions:', error);
+            // Fallback to search-based suggestions
+            await updateSearchSuggestions(query);
+        }
+    }, 300);
+}
+
+// Display search suggestions
+function displaySearchSuggestions(suggestions) {
+    const searchWrapper = document.querySelector('.search-wrapper');
+    let suggestionsContainer = document.getElementById('search-suggestions');
+    
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'search-suggestions';
+        suggestionsContainer.className = 'search-suggestions';
+        searchWrapper.appendChild(suggestionsContainer);
+    }
+    
+    suggestionsContainer.innerHTML = suggestions.map(suggestion => `
+        <div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">
+            <span class="suggestion-text">${suggestion}</span>
+        </div>
+    `).join('');
+    
+    suggestionsContainer.style.display = 'block';
+}
+
+// Hide search suggestions
+function hideSearchSuggestions() {
+    const suggestionsContainer = document.getElementById('search-suggestions');
+    if (suggestionsContainer) {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+// Select a suggestion
+function selectSuggestion(suggestion) {
+    const searchInput = document.getElementById('search-input');
+    searchInput.value = suggestion;
+    hideSearchSuggestions();
+    applySmartFilters();
+}
+
+// =============== Smart Filters Functionality ===============
+async function applySmartFilters() {
+  const mood = document.getElementById('mood-filter').value;
+  const time = document.getElementById('time-filter').value;
+  const occasion = document.getElementById('occasion-filter').value;
+  const searchInput = document.getElementById('search-input').value.trim();
+  
+  // Show loading state
+  const filterBtn = document.querySelector('.filter-btn-inline');
+  const originalText = filterBtn.innerHTML;
+  filterBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Finding...';
+  filterBtn.disabled = true;
+  
+  try {
+    // Use the new search API with filters
+    const searchParams = new URLSearchParams({
+      q: searchInput || "restaurant",
+      mood: mood,
+      time: time,
+      occasion: occasion,
+      per_page: 20
+    });
+    
+    console.log('Applying smart filters:', { mood, time, occasion, searchInput });
+    
+    const response = await fetch(`/api/search?${searchParams}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Smart filter results:', data);
+    
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Display the results
+    displaySmartFilterResults(data.restaurants, {
+      user_input: searchInput,
+      mood: mood,
+      time: time,
+      occasion: occasion
+    });
+    
+  } catch (error) {
+    console.error('Error applying smart filters:', error);
+    displayError(`Failed to load restaurant recommendations. Please check your connection and try again.`);
+  } finally {
+    // Restore button state
+    filterBtn.innerHTML = originalText;
+    filterBtn.disabled = false;
+  }
+}
+
+function displaySmartFilterResults(restaurants, query) {
+  // Create or update results container
+  let resultsContainer = document.getElementById('smart-filter-results');
+  if (!resultsContainer) {
+    resultsContainer = document.createElement('div');
+    resultsContainer.id = 'smart-filter-results';
+    resultsContainer.className = 'smart-filter-results';
+    document.querySelector('.hero').appendChild(resultsContainer);
+  }
+  
+  if (!restaurants || restaurants.length === 0) {
+    resultsContainer.innerHTML = `
+      <div class="no-results">
+        <h3>No perfect matches found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+      </div>
+    `;
+    resultsContainer.style.display = 'block';
+    return;
+  }
+  
+  // Build results HTML
+  const queryText = `for ${query.user_input || 'restaurants'} (${query.mood || 'any'} mood, ${query.time || 'any time'}, ${query.occasion || 'any occasion'})`;
+  
+  resultsContainer.innerHTML = `
+    <div class="results-header">
+      <h3>🎯 Perfect Matches ${queryText}</h3>
+      <p>Based on your preferences and mood</p>
+    </div>
+    <div class="results-grid">
+      ${restaurants.map(restaurant => `
+        <div class="smart-result-card" onclick="goToRestaurant('${restaurant.name}')">
+          <div class="result-image">
+            <img src="${getCuisineImage(restaurant.cuisines)}" alt="${restaurant.name}" onerror="this.src='/static/images/restaurant-default.jpg'">
+            <div class="rating-badge">⭐ ${restaurant.rating.toFixed(1)}</div>
+          </div>
+          <div class="result-info">
+            <h4>${restaurant.name}</h4>
+            <p class="cuisine">${restaurant.cuisines}</p>
+            <p class="location">📍 ${restaurant.address || restaurant.location}</p>
+            <div class="result-meta">
+              <span class="rating">⭐ ${restaurant.rating.toFixed(1)}/5</span>
+              <span class="price">💰 ${restaurant.price_range}</span>
+            </div>
+            <div class="result-actions">
+              <button class="view-btn" onclick="event.stopPropagation(); goToRestaurant('${restaurant.name}')">View Details</button>
+              <button class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist('${restaurant.name}')">❤️</button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  
+  resultsContainer.style.display = 'block';
+  
+  // Scroll to results
+  resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Add CSS for smart filter results
+const smartFilterCSS = `
+<style>
+.smart-filter-results {
+  margin-top: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.results-header h3 {
+  color: #1F2933;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.results-header p {
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+        .smart-result-card {
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease;
+          cursor: pointer;
+        }
+
+        .smart-result-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+.result-image {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+}
+
+.result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.match-score {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #D9822B;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.result-info {
+  padding: 15px;
+}
+
+.result-info h4 {
+  color: #1F2933;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.result-info .cuisine {
+  color: #D9822B;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.result-info .location {
+  color: #6B7280;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.result-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.result-meta span {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.view-btn {
+  width: 100%;
+  background: #D9822B;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+        .view-btn:hover {
+          background: #B8651F;
+        }
+
+        .result-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+
+        .wishlist-btn {
+          background: #EF4444;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          font-size: 14px;
+        }
+
+        .wishlist-btn:hover {
+          background: #DC2626;
+        }
+
+        .rating-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: #D9822B;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: bold;
+        }
+
+        .no-results {
+          text-align: center;
+          padding: 40px;
+          color: #6B7280;
+        }
+
+        .error-message {
+          text-align: center;
+          padding: 40px;
+          color: #EF4444;
+        }
+
+        .suggestion-item {
+          padding: 12px 16px;
+          border-bottom: 1px solid #E5E7EB;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+          background: #F9FAFB;
+        }
+
+        .suggestion-item:last-child {
+          border-bottom: none;
+        }
+
+        .suggestion-details {
+          color: #6B7280;
+          font-size: 14px;
+          margin-left: 8px;
+        }
+
+@media (max-width: 768px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+`;
+
+// Inject CSS
+document.head.insertAdjacentHTML('beforeend', smartFilterCSS);
+
+// =============== Restaurant Navigation ===============
+function goToRestaurant(restaurantName) {
+  // Navigate to restaurant details page
+  window.location.href = `/restaurant/${encodeURIComponent(restaurantName)}`;
+}
+
+// =============== Wishlist Functions ===============
+async function addToWishlist(restaurantName) {
+  try {
+    const response = await fetch('/api/wishlist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: restaurantName })
+    });
+    
+    if (response.ok) {
+      // Show success message
+      showNotification('Added to wishlist!', 'success');
+    } else {
+      throw new Error('Failed to add to wishlist');
+    }
+  } catch (error) {
+    console.error('Error adding to wishlist:', error);
+    showNotification('Failed to add to wishlist', 'error');
+  }
+}
+
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  
+  // Add styles
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+    background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// =============== Search and Filter Functionality ===============
+// Enhanced search and filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const moodFilter = document.getElementById('mood-filter');
+    const timeFilter = document.getElementById('time-filter');
+    const occasionFilter = document.getElementById('occasion-filter');
+    
+    // Load featured restaurants on page load
+    loadFeaturedRestaurants();
+    
+    // Initialize filter listeners for immediate updates
+    initializeFilterListeners();
+    
+    // Real-time search suggestions
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                updateSearchSuggestions(this.value);
+            }, 300);
+        });
+    }
+    
+    // Filter change handlers
+    [moodFilter, timeFilter, occasionFilter].forEach(filter => {
+        if (filter) {
+            filter.addEventListener('change', function() {
+                updateFilteredResults();
+            });
+        }
+    });
+});
+
+async function updateSearchSuggestions(query) {
+    // Implement search suggestions based on Zomato data
+    if (query.length < 2) return;
+    
+    try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&per_page=5`);
+        const data = await response.json();
+        
+        if (data.restaurants && data.restaurants.length > 0) {
+            // Extract unique suggestions from restaurant names and cuisines
+            const suggestions = new Set();
+            data.restaurants.forEach(restaurant => {
+                if (restaurant.name && restaurant.name.toLowerCase().includes(query.toLowerCase())) {
+                    suggestions.add(restaurant.name);
+                }
+                if (restaurant.cuisines) {
+                    restaurant.cuisines.split(',').forEach(cuisine => {
+                        const trimmedCuisine = cuisine.trim();
+                        if (trimmedCuisine.toLowerCase().includes(query.toLowerCase())) {
+                            suggestions.add(trimmedCuisine);
+                        }
+                    });
+                }
+            });
+            
+            if (suggestions.size > 0) {
+                displaySearchSuggestions(Array.from(suggestions).slice(0, 5));
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching search suggestions:', error);
+    }
+}
+
+function displaySearchSuggestions(suggestions) {
+    const suggestionBox = document.getElementById('suggestion-box');
+    if (!suggestionBox) return;
+    
+    let suggestionsHtml = '';
+    
+    if (suggestions.length > 0) {
+        // Check if suggestions are restaurant objects or strings
+        if (typeof suggestions[0] === 'object' && suggestions[0].name) {
+            // Restaurant objects
+            suggestionsHtml = suggestions.map(restaurant => `
+                <div class="suggestion-item" onclick="selectSuggestion('${restaurant.name}')">
+                    <strong>${restaurant.name}</strong>
+                    <span class="suggestion-details">${restaurant.cuisines} • ${restaurant.city}</span>
+                </div>
+            `).join('');
+        } else {
+            // String suggestions
+            suggestionsHtml = suggestions.map(suggestion => `
+                <div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">
+                    <strong>${suggestion}</strong>
+                </div>
+            `).join('');
+        }
+    }
+    
+    suggestionBox.innerHTML = suggestionsHtml;
+    suggestionBox.style.display = suggestionsHtml ? 'block' : 'none';
+}
+
+function selectSuggestion(restaurantName) {
+    document.getElementById('search-input').value = restaurantName;
+    document.getElementById('suggestion-box').style.display = 'none';
+    updateFilteredResults();
+}
+
+async function updateFilteredResults() {
+    // Implement dynamic filtering based on current selections
+    const mood = document.getElementById('mood-filter')?.value || '';
+    const time = document.getElementById('time-filter')?.value || '';
+    const occasion = document.getElementById('occasion-filter')?.value || '';
+    const searchQuery = document.getElementById('search-input')?.value || '';
+    
+    try {
+        const searchParams = new URLSearchParams({
+            q: searchQuery,
+            mood: mood,
+            time: time,
+            occasion: occasion,
+            per_page: 20
+        });
+        
+        const response = await fetch(`/api/search?${searchParams}`);
+        const data = await response.json();
+        
+        if (data.restaurants && data.restaurants.length > 0) {
+            displaySmartFilterResults(data.restaurants, {
+                user_input: searchQuery,
+                mood: mood,
+                time: time,
+                occasion: occasion
+            });
+        } else {
+            displayNoResults();
+        }
+    } catch (error) {
+        console.error('Error updating filtered results:', error);
+        displayError('Failed to load results. Please try again.');
+    }
+}
+
+function displayNoResults() {
+    const resultsContainer = document.getElementById('smart-filter-results');
+    if (!resultsContainer) return;
+    
+    resultsContainer.innerHTML = `
+        <div class="no-results">
+            <h3>No restaurants found</h3>
+            <p>Try adjusting your search terms or filters.</p>
+        </div>
+    `;
+    resultsContainer.style.display = 'block';
+}
+
+function displayError(message, action = null) {
+    const resultsContainer = document.getElementById('smart-filter-results');
+    if (!resultsContainer) return;
+    
+    const retryButton = action ? `<button class="retry-btn" onclick="${action}">Try Again</button>` : '';
+    resultsContainer.innerHTML = `
+        <div class="error-message">
+            <div class="error-icon">⚠️</div>
+            <h3>Oops! Something went wrong</h3>
+            <p>${message}</p>
+            ${retryButton}
+        </div>
+    `;
+    resultsContainer.style.display = 'block';
+}
+
+// =============== Filter Event Listeners ===============
+function initializeFilterListeners() {
+    // Add event listeners to all filter inputs
+    const moodFilter = document.getElementById('mood-filter');
+    const timeFilter = document.getElementById('time-filter');
+    const occasionFilter = document.getElementById('occasion-filter');
+    
+    if (moodFilter) {
+        moodFilter.addEventListener('change', applySmartFilters);
+    }
+    if (timeFilter) {
+        timeFilter.addEventListener('change', applySmartFilters);
+    }
+    if (occasionFilter) {
+        occasionFilter.addEventListener('change', applySmartFilters);
+    }
+}
+
+// =============== Featured Restaurants ===============
+async function loadFeaturedRestaurants() {
+    try {
+        const response = await fetch('/api/featured');
+        const data = await response.json();
+        
+        if (data.restaurants && data.restaurants.length > 0) {
+            displayFeaturedRestaurants(data.restaurants);
+        } else {
+            displayFeaturedError('No featured restaurants available');
+        }
+    } catch (error) {
+        console.error('Error loading featured restaurants:', error);
+        displayFeaturedError('Failed to load featured restaurants');
+    }
+}
+
+function displayFeaturedRestaurants(restaurants) {
+    const container = document.getElementById('featuredRestaurants');
+    if (!container) return;
+    
+    container.innerHTML = restaurants.map(restaurant => `
+        <div class="restaurant-card featured">
+            <div class="restaurant-image">
+                <img src="${getCuisineImage(restaurant.cuisines)}" alt="${restaurant.name}" onerror="this.src='/static/images/food1.jpg'">
+                <div class="rating-badge">${restaurant.rating.toFixed(1)} ⭐</div>
+            </div>
+            <div class="restaurant-info">
+                <h3>${restaurant.name}</h3>
+                <p class="cuisine-tag">${restaurant.cuisines}</p>
+                <p class="restaurant-description">${restaurant.location || restaurant.city || 'Great dining experience'}</p>
+                <div class="restaurant-meta">
+                    <span class="price-range">₹${restaurant.price}</span>
+                    <span class="distance">${restaurant.votes} votes</span>
+                </div>
+                <button class="view-details-btn" onclick="goToRestaurant('${restaurant.name}')">View Details</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayFeaturedError(message) {
+    const container = document.getElementById('featuredRestaurants');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="error-message">
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+// =============== Nearby Restaurants ===============
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                searchNearbyRestaurants(lat, lng);
+            },
+            function(error) {
+                console.error('Error getting location:', error);
+                alert('Unable to get your location. Please enter it manually.');
+            }
+        );
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+
+async function searchNearbyRestaurants(lat = null, lng = null) {
+    const locationInput = document.getElementById('location-input');
+    const container = document.getElementById('nearbyRestaurants');
+    
+    if (!container) return;
+    
+    // Show loading state
+    container.innerHTML = '<div class="loading-placeholder"><p>Searching nearby restaurants...</p></div>';
+    
+    try {
+        let url = '/api/nearby?';
+        
+        if (lat && lng) {
+            url += `lat=${lat}&lng=${lng}`;
+        } else if (locationInput && locationInput.value.trim()) {
+            url += `city=${encodeURIComponent(locationInput.value.trim())}`;
+        } else {
+            container.innerHTML = '<div class="loading-placeholder"><p>Please enter a location or use current location</p></div>';
+            return;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.restaurants && data.restaurants.length > 0) {
+            displayNearbyRestaurants(data.restaurants);
+        } else {
+            displayNearbyError('No restaurants found nearby. Try a different location.');
+        }
+    } catch (error) {
+        console.error('Error searching nearby restaurants:', error);
+        displayNearbyError('Failed to search nearby restaurants');
+    }
+}
+
+function displayNearbyRestaurants(restaurants) {
+    const container = document.getElementById('nearbyRestaurants');
+    if (!container) return;
+    
+    container.innerHTML = restaurants.map(restaurant => `
+        <div class="nearby-card">
+            <img src="${getCuisineImage(restaurant.cuisines)}" alt="${restaurant.name}" onerror="this.src='/static/images/food1.jpg'">
+            <div class="nearby-info">
+                <h4>${restaurant.name}</h4>
+                <p>${restaurant.distance ? restaurant.distance.toFixed(1) + ' km' : 'Nearby'} • ${restaurant.cuisines}</p>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="goToRestaurant('${restaurant.name}')">View Details</button>
+                    <button class="quick-btn" onclick="openDirections(${restaurant.latitude}, ${restaurant.longitude})">Directions</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayNearbyError(message) {
+    const container = document.getElementById('nearbyRestaurants');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="error-message">
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+function openDirections(lat, lng) {
+    if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+    } else {
+        alert('Location coordinates not available');
+    }
+}

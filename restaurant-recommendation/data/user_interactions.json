@@ -1,324 +1,93 @@
 [
   {
-    "timestamp": "2025-10-08T05:20:59.446125",
-    "type": "search",
-    "data": {
-      "query": "c"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T05:20:59.858112",
-    "type": "search",
-    "data": {
-      "query": "ca"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T05:21:00.211121",
-    "type": "search",
-    "data": {
-      "query": "caf"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T05:21:01.997989",
-    "type": "search",
-    "data": {
-      "query": "c"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:26.721775",
-    "type": "search",
-    "data": {
-      "query": "c"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:27.326287",
-    "type": "search",
-    "data": {
-      "query": "caf"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:31.138702",
-    "type": "search",
-    "data": {
-      "query": "cafe"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:42.450451",
-    "type": "search",
-    "data": {
-      "query": "caf"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:42.725247",
-    "type": "search",
-    "data": {
-      "query": "ca"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:43.428413",
-    "type": "search",
-    "data": {
-      "query": "cak"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:25:43.873182",
-    "type": "search",
-    "data": {
-      "query": "cake"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:39:37.602185",
+    "timestamp": "2025-10-23T19:11:29.966935",
     "type": "chatbot",
     "data": {
-      "query": "CAFE"
+      "query": "test"
     },
     "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+    "user_agent": "python-requests/2.31.0"
   },
   {
-    "timestamp": "2025-10-08T11:39:41.833837",
+    "timestamp": "2025-10-23T19:12:26.763291",
     "type": "chatbot",
     "data": {
-      "query": "PIZZA"
+      "query": "pizza"
     },
     "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+    "user_agent": "python-requests/2.31.0"
   },
   {
-    "timestamp": "2025-10-08T11:39:44.941882",
+    "timestamp": "2025-10-23T19:13:47.944654",
     "type": "chatbot",
     "data": {
-      "query": "SHUSI"
+      "query": "pizza"
     },
     "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+    "user_agent": "python-requests/2.31.0"
   },
   {
-    "timestamp": "2025-10-08T11:39:56.790521",
+    "timestamp": "2025-10-23T19:14:30.496505",
     "type": "chatbot",
     "data": {
-      "query": "FAST"
+      "query": "test"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "python-requests/2.31.0"
+  },
+  {
+    "timestamp": "2025-10-23T19:16:47.293317",
+    "type": "chatbot",
+    "data": {
+      "query": "pizza"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "python-requests/2.31.0"
+  },
+  {
+    "timestamp": "2025-10-23T19:19:07.575088",
+    "type": "ml_recommendation",
+    "data": {
+      "user_input": "pizza",
+      "mood": "happy",
+      "time": "evening",
+      "occasion": "dinner"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "python-requests/2.31.0"
+  },
+  {
+    "timestamp": "2025-10-23T19:19:18.074952",
+    "type": "chatbot",
+    "data": {
+      "query": "pizza restaurants"
+    },
+    "ip": "127.0.0.1",
+    "user_agent": "python-requests/2.31.0"
+  },
+  {
+    "timestamp": "2025-10-23T19:27:54.982215",
+    "type": "chatbot",
+    "data": {
+      "query": "birthday"
     },
     "ip": "127.0.0.1",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
   },
   {
-    "timestamp": "2025-10-08T11:40:15.839293",
-    "type": "search",
+    "timestamp": "2025-10-23T19:28:00.319435",
+    "type": "chatbot",
     "data": {
-      "query": "CA"
+      "query": "pizza"
     },
     "ip": "127.0.0.1",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
   },
   {
-    "timestamp": "2025-10-08T11:40:16.239777",
-    "type": "search",
+    "timestamp": "2025-10-23T20:06:38.583116",
+    "type": "chatbot",
     "data": {
-      "query": "CAF"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:17.617237",
-    "type": "search",
-    "data": {
-      "query": "CAFE"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:20.042052",
-    "type": "search",
-    "data": {
-      "query": "CAF"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:20.270901",
-    "type": "search",
-    "data": {
-      "query": "CA"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:21.409736",
-    "type": "search",
-    "data": {
-      "query": "CO"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:21.890212",
-    "type": "search",
-    "data": {
-      "query": "COF"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:22.189750",
-    "type": "search",
-    "data": {
-      "query": "COFF"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:23.675576",
-    "type": "search",
-    "data": {
-      "query": "COF"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:23.923454",
-    "type": "search",
-    "data": {
-      "query": "CO"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:25.455470",
-    "type": "search",
-    "data": {
-      "query": "PI"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:25.906511",
-    "type": "search",
-    "data": {
-      "query": "PIZ"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:26.105643",
-    "type": "search",
-    "data": {
-      "query": "PIZZ"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:27.696213",
-    "type": "search",
-    "data": {
-      "query": "PIZ"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-08T11:40:28.122601",
-    "type": "search",
-    "data": {
-      "query": "PI"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:34.096302",
-    "type": "search",
-    "data": {
-      "query": "p"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:35.242065",
-    "type": "search",
-    "data": {
-      "query": "pi"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:36.859911",
-    "type": "search",
-    "data": {
-      "query": "piz"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:37.332790",
-    "type": "search",
-    "data": {
-      "query": "pizz"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:39.263086",
-    "type": "search",
-    "data": {
-      "query": "piz"
-    },
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": "2025-10-09T00:43:39.805943",
-    "type": "search",
-    "data": {
-      "query": "p"
+      "query": "spice"
     },
     "ip": "127.0.0.1",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
